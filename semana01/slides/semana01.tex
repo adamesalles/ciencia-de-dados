@@ -1,0 +1,377 @@
+\documentclass[xcolor=dvipsnames,t,aspectratio=169]{beamer}
+
+\usecolortheme{rose}
+\usecolortheme{dolphin}
+\usetheme{Boadilla}
+
+\input{../../templates/slides/imports}
+\input{../../templates/slides/settings}
+\input{../../templates/slides/commands}
+
+\usepackage{tikz}
+\usepackage{svg}
+\usetikzlibrary{arrows.meta, shapes}
+
+\titlegraphic{
+    \includegraphics[scale = 0.5]{../../templates/slides/logo}
+}
+
+\logo{
+\begin{tikzpicture}[overlay,remember picture]
+\node[left=1.1cm, below=0.2cm] at (current page.30){
+    \includegraphics[width=0.1\textwidth]{../../templates/slides/logo}};
+\end{tikzpicture}
+}
+
+\newcommand{\highlight}[1]{{\color{nes_dark_orange} #1}}
+
+\title{Introdução ao Linux, Shell e Organização de Projetos}
+
+\author{Eduardo Adame}
+
+\date{{\color{nes_dark_purple}\textbf{Ciência de Dados}\\[0.5em] 04 de março de 2026}}
+
+\begin{document}
+
+\frame[plain]{\titlepage}
+\setcounter{framenumber}{0}
+
+\section{Sobre mim}
+\begin{frame}[c]{Sobre mim}
+    \begin{columns}[c]
+        \begin{column}{0.7\textwidth}
+            \begin{itemize}
+                \item \textbf{Nome:} Eduardo Adame
+                \item \textbf{Formação:}
+                \begin{itemize}
+                    \item Mestrando em Matemática Aplicada e Ciência de Dados (FGV EMAp); 
+                    \item Bacharel em Ciência de Dados e Inteligência Artificial (FGV EMAp).
+                \end{itemize}
+                \item \textbf{Experiência:} Diversos cursos produzidos/ministrados, ex-consultor por 2 anos e meio no Banco Mundial.
+                \item \textbf{Pesquisa:} Estatística bayesiana; quantificação de incerteza, modelos não-paramétricos, inferência exata.
+                \item \textbf{Contato:} eadamesalles@gmail.com
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.3\textwidth}
+            \centering
+            \includegraphics[width=0.9\textwidth]{images/me.jpg}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}[c]{Sobre o curso}
+\begin{display}[Objetivos]
+\begin{itemize}
+\item Aprender a trabalhar com \highlight{dados reais}
+\item Construir \highlight{pipelines de ciência de dados}
+\item Dominar ferramentas fundamentais do ecossistema:
+\begin{itemize}
+\item Linux
+\item Git
+\item Python
+\item Bancos de dados
+\end{itemize}
+\end{itemize}
+\end{display}
+
+
+\end{frame}
+
+
+\begin{frame}[c]{Sobre o curso}
+
+\begin{display}[Metodologia]
+\begin{itemize}
+\item Aulas teóricas curtas
+\item Demonstrações ao vivo
+\item Exercícios semanais
+\item Projetos práticos
+\end{itemize}
+\end{display}
+
+\end{frame}
+
+\begin{frame}[c]{Estrutura do curso - 15 semanas}
+    \begin{columns}[c]
+        \begin{column}{0.5\textwidth}
+            \textbf{Fundamentos (Semanas 1-8):}
+            \begin{enumerate}
+                \item Linux, Shell e organização de projetos
+                \item Git, ambientes de desenvolvimento e organização de projetos de dados
+                \item NumPy e computação numérica
+                \item Pandas: manipulação e limpeza de dados
+                \item Visualização de dados e análise exploratória
+                \item Formatos de dados + Bancos de dados
+                \item Feature Engineering e pipelines de dados
+                \item Avaliação 1
+            \end{enumerate}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \textbf{Tópicos Avançados (Semanas 9-15):}
+            \begin{enumerate}
+                \setcounter{enumi}{8}
+                \item Web Scraping e APIs
+                \item Clusterização (K-Means, DBSCAN)
+                \item Busca textual e ranking
+                \item Processamento de linguagem natural (NLP)
+                \item Séries temporais
+                \item ETL e dashboards interativos (Streamlit)
+                \item Avaliação 2
+            \end{enumerate}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\section{Por que aprender Linux?}
+
+\begin{frame}[c]{Por que cientistas de dados usam Linux?}
+
+\begin{itemize}
+
+\item A maioria dos servidores roda \highlight{Linux}
+
+\item Ferramentas de ciência de dados nasceram nesse ecossistema
+
+\item Pipelines de dados são executados em \highlight{linha de comando}
+
+\item Automação e reprodutibilidade
+
+\end{itemize}
+
+\begin{display}[Exemplos]
+\begin{itemize}
+
+\item servidores cloud
+
+\item clusters HPC
+
+\item pipelines ETL
+
+\item containers Docker
+
+\end{itemize}
+\end{display}
+
+\end{frame}
+
+\section{História}
+
+\begin{frame}[c]{Breve história do Unix}
+
+\begin{itemize}
+
+\item Década de 1960: projeto \highlight{Multics}
+
+\item 1969: Ken Thompson e Dennis Ritchie criam o \highlight{Unix}
+
+\item Filosofia: pequenos programas que fazem \highlight{uma coisa bem}
+
+\item Unix se espalha pelas universidades
+
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[c,plain]{Breve história do Unix}
+    \centering
+    \includegraphics[height=0.9\textheight]{images/Unix_history-simple.png}
+\end{frame}
+
+\begin{frame}[c]{Nascimento do Linux}
+
+\begin{itemize}
+
+\item 1991: \highlight{Linus Torvalds} cria o kernel Linux
+
+\item Inspirado pelo design do Unix
+
+\item Licença open source
+
+\item Comunidade global de desenvolvimento
+
+\end{itemize}
+
+\begin{display}[Hoje]
+Linux roda:
+
+\begin{itemize}
+\item servidores
+\item Android
+\item supercomputadores
+\item infraestrutura de internet
+\end{itemize}
+
+\end{display}
+
+\end{frame}
+
+\section{Terminal}
+
+\begin{frame}[c]{Interface de Linha de Comando}
+
+\begin{columns}
+
+\begin{column}{0.5\textwidth}
+
+
+\textbf{CLI}
+
+\begin{itemize}
+\item comandos
+\item scripts
+\item automação
+\end{itemize}\pause{}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.4\linewidth]{images/Python-logo-notext.svg.png}
+\end{figure}
+\pause{}
+
+\end{column}
+
+\begin{column}{0.5\textwidth}
+\textbf{GUI}
+
+\begin{itemize}
+\item mouse
+\item janelas
+\item ícones
+\end{itemize}\pause{}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.4\linewidth]{images/clash.jpg}
+\end{figure}
+
+
+
+\end{column}
+
+\end{columns}
+
+\end{frame}
+
+\begin{frame}[c]{Comandos básicos}
+
+\begin{columns}
+
+\begin{column}{0.5\textwidth}
+\begin{itemize}
+
+\item ls
+
+\item cd
+
+\item pwd
+
+\item mkdir
+
+\item cp
+
+\item mv
+
+\item rm
+
+\end{itemize}
+\end{column}
+
+
+\begin{column}{0.5\textwidth}
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{images/Televideo925Terminal.jpg}
+\end{figure}
+    
+\end{column}
+
+\end{columns}
+\end{frame}
+
+\section{Organização de projetos}
+
+\begin{frame}[c, fragile]{Estrutura de um projeto de dados}
+
+\begin{verbatim}
+project/
+
+data/
+notebooks/
+src/
+scripts/
+results/
+README.md
+\end{verbatim}
+
+\begin{itemize}
+
+\item Separar dados, código e resultados
+
+\item Facilitar reprodução
+
+\end{itemize}
+
+\end{frame}
+
+\section{Git}
+
+\begin{frame}[c, fragile]{Versionamento}
+
+\begin{display}[Por que usar Git?]
+
+\begin{itemize}
+
+\item Histórico de mudanças
+
+\item Colaboração
+
+\item Reprodutibilidade
+
+\end{itemize}
+
+\end{display}
+
+\begin{verbatim}
+git clone
+git add
+git commit
+git push
+\end{verbatim}
+
+\end{frame}
+
+\begin{frame}[c]{Resumo}
+
+\begin{display}[Hoje vimos]
+
+\begin{itemize}
+
+\item História do Unix e Linux
+
+\item Interface de linha de comando
+
+\item Comandos básicos
+
+\item Organização de projetos
+
+\item Git
+
+\end{itemize}
+
+\end{display}
+
+\end{frame}
+
+
+\begin{frame}[c, noframenumbering, plain]
+    \frametitle{~}
+        \vfill
+        \begin{center}
+            {\Huge Obrigado!}\vspace{1.5em}\\
+            {\Large \highlight{Alguma dúvida?}}\\
+        \end{center}
+        \vfill
+        \begin{center}
+            {\small Vamos abrir o terminal!}
+        \end{center}
+\end{frame}
+
+\end{document}
