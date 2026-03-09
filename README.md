@@ -26,7 +26,7 @@ Este curso faz parte do Módulo V do NES
 | Semana | Data | Tópico | Material |
 |------|------|------|------|
 | 1 | 04/03/2026 | Introdução ao curso + Linux, Shell e organização de projetos | [Slides](semana01/slides/) \| [Notebook](semana01/notebook/) \| [Exercícios](semana01/exercicios/) |
-| 2 | 11/03/2026 | Git, ambientes de desenvolvimento e organização de projetos de dados | [Slides](semana02/slides/) \| [Notebook](semana02/notebook/) \| [Exercícios](semana02/exercicios/) |
+| 2 | 11/03/2026 | Git, Github e Ambientes de Desenvolvimento | [Slides](semana02/slides/) \| [Notebook](semana02/notebook/) \| [Exercícios](semana02/exercicios/) |
 | 3 | 18/03/2026 | NumPy e computação numérica | [Slides](semana03/slides/) \| [Notebook](semana03/notebook/) \| [Exercícios](semana03/exercicios/) |
 | 4 | 25/03/2026 | Pandas: manipulação e limpeza de dados | [Slides](semana04/slides/) \| [Notebook](semana04/notebook/) \| [Exercícios](semana04/exercicios/) |
 | 5 | 01/04/2026 | Visualização de dados e análise exploratória (EDA) | [Slides](semana05/slides/) \| [Notebook](semana05/notebook/) \| [Exercícios](semana05/exercicios/) |
