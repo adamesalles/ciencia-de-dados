@@ -1,0 +1,8 @@
+import time
+
+initial_time = time.time()
+# python
+python_time = time.time() - initial_time
+initial_time = time.time()
+# numpy
+numpy_time = time.time() - initial_time

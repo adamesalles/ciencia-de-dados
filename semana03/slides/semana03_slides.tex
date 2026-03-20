@@ -1,0 +1,292 @@
+\documentclass[xcolor=dvipsnames,t,aspectratio=169]{beamer}
+
+\usecolortheme{rose}
+\usecolortheme{dolphin}
+\usetheme{Boadilla}
+
+\input{../../templates/slides/imports}
+\input{../../templates/slides/settings}
+\input{../../templates/slides/commands}
+
+\titlegraphic{
+    \includegraphics[scale = 0.5]{../../templates/slides/logo}
+}
+
+\logo{
+\begin{tikzpicture}[overlay,remember picture]
+\node[xshift=-.75cm, yshift=-1cm] at (current page.30){
+    \includegraphics[width=0.1\textwidth]{../../templates/slides/logo}};
+\end{tikzpicture}
+}
+\usetikzlibrary{positioning}
+
+\newcommand{\highlight}[1]{{\color{nes_dark_orange} #1}}
+
+\title{NumPy e computação numérica }
+
+\author{Eduardo Adame}
+
+\date{{\color{nes_dark_purple}\textbf{Ciência de Dados}\\[0.5em] 20 de março de 2026 }}
+
+\begin{document}
+
+\frame[plain]{\titlepage}
+\setcounter{framenumber}{0}
+
+
+\section{NumPy}
+
+\begin{frame}[c, fragile]{Por que NumPy?}
+
+Problema: Python puro não é eficiente para computação numérica.
+
+\begin{code}[Python vanilla]{python}
+L = list(range(1000))
+[i**2 for i in L]
+\end{code}
+
+\begin{code}[NumPy]{python}
+import numpy as np
+a = np.arange(1000)
+a**2
+\end{code}
+
+\begin{itemize}
+\item NumPy é \highlight{vetorizado}
+\item Executa operações em \highlight{C por baixo}
+\item Muito mais rápido e eficiente
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{O que é um array?}
+\begin{itemize}
+\item Estrutura de dados homogênea
+\item Elementos do mesmo tipo
+\item Armazenamento contíguo em memória
+\end{itemize}
+
+\begin{code}[Exemplo]{python}
+a = np.array([1,2,3])
+a.shape
+a.dtype
+\end{code}
+
+\begin{display}[Importante]
+NumPy não é uma lista melhor — é outra estrutura.
+\end{display}
+
+\end{frame}
+
+\begin{frame}[c, fragile]{Criando arrays}
+
+\begin{code}[Criação]{python}
+np.array([1,2,3])
+
+np.arange(0,10)
+
+np.linspace(0,1,5)
+
+np.zeros((3,3))
+
+np.ones((2,2))
+
+np.eye(3)
+\end{code}
+
+\begin{itemize}
+\item Evite construir arrays manualmente
+\item Prefira funções vetorizadas
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[c, fragile]{Shape e dimensão}
+
+\begin{code}[Exemplo]{python}
+a = np.array([[1,2,3],[4,5,6]])
+
+a.shape   # (2,3)
+a.ndim    # 2
+\end{code}
+
+\begin{itemize}
+\item shape = tamanho em cada dimensão
+\item ndim = número de dimensões
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[c, fragile]{Indexação}
+
+\begin{code}[Indexação]{python}
+a = np.arange(10)
+
+a[0]
+a[-1]
+a[2:5]
+a[::2]
+\end{code}
+
+\begin{code}[2D]{python}
+b = np.array([[1,2],[3,4]])
+
+b[0,1]
+\end{code}
+
+\end{frame}
+
+\begin{frame}[c, fragile]{Operações vetorizadas}
+
+\begin{code}[Elementwise]{python}
+a = np.array([1,2,3])
+
+a + 1
+a * 2
+a ** 2
+\end{code}
+
+\begin{itemize}
+\item Sem loops explícitos
+\item Muito mais rápido
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[c, fragile]{Comparação com Python}
+
+\begin{code}[Python]{python}
+[i+1 for i in range(10000)]
+\end{code}
+
+\begin{code}[NumPy]{python}
+a = np.arange(10000)
+a + 1
+\end{code}
+
+
+\highlight{Evite} loops sempre que possível.
+
+
+\end{frame}
+
+\begin{frame}[c, fragile]{Broadcasting}
+
+\begin{code}[Exemplo]{python}
+a = np.array([[1,2,3],
+              [4,5,6]])
+
+b = np.array([1,2,3])
+
+a + b
+\end{code}
+
+\begin{itemize}
+\item NumPy expande dimensões automaticamente
+\item Evita loops explícitos
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[c, fragile]{Reduções}
+
+\begin{code}[Exemplo]{python}
+a = np.array([[1,2],[3,4]])
+
+a.sum()
+a.sum(axis=0)
+a.mean()
+a.std()
+\end{code}
+
+\begin{itemize}
+\item axis controla dimensão da operação
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[c, fragile]{Operações booleanas e filtros}
+
+\begin{code}[Comparações]{python}
+a = np.array([1,2,3,4])
+
+a > 2
+a == 3
+\end{code}
+
+\begin{code}[Máscaras booleanas]{python}
+mask = a > 2
+a[mask]
+\end{code}
+
+\begin{code}[Filtro direto]{python}
+a[a > 2]
+\end{code}
+
+\end{frame}
+
+\begin{frame}[c, fragile]{Operações booleanas e filtros}
+
+\begin{code}[Combinações]{python}
+(a > 1) & (a < 4)
+(a == 1) | (a == 4)
+\end{code}
+
+\begin{itemize}
+\item Permite selecionar subconjuntos de dados
+\item Base para \highlight{data filtering} em ciência de dados
+\item Evita loops explícitos
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[c, fragile]{Álgebra linear}
+
+\begin{code}[Produto]{python}
+A @ B
+\end{code}
+
+\begin{itemize}
+\item \texttt{*} não é produto matricial
+\item use \texttt{@} ou \texttt{np.dot}
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[c, fragile]{Performance}
+
+\begin{code}[Benchmark]{python}
+import time
+
+initial_time = time.time()
+# python
+python_time = time.time() - initial_time
+initial_time = time.time()
+# numpy
+numpy_time = time.time() - initial_time
+\end{code}
+
+\begin{itemize}
+\item NumPy usa memória contígua
+\item operações vetorizadas
+\item evita overhead do Python
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[c, noframenumbering, plain]
+    \frametitle{~}
+        \vfill
+        \begin{center}
+            {\Huge Obrigado!}\vspace{1.5em}\\
+            {\Large \highlight{Alguma dúvida?}}\\
+        \end{center}
+        \vfill
+        \begin{center}
+            {\small Agora vamos para os exercícios!}
+        \end{center}
+\end{frame}
+
+\end{document}

@@ -1,0 +1,19 @@
+\frametitle{Performance}
+
+\begin{code}[Benchmark]{python}
+import time
+
+initial_time = time.time()
+# python
+python_time = time.time() - initial_time
+initial_time = time.time()
+# numpy
+numpy_time = time.time() - initial_time
+\end{code}
+
+\begin{itemize}
+\item NumPy usa memória contígua
+\item operações vetorizadas
+\item evita overhead do Python
+\end{itemize}
+

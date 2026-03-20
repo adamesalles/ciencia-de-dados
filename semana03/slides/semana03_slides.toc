@@ -1,0 +1,2 @@
+\babel@toc {brazil}{}\relax 
+\beamer@sectionintoc {1}{NumPy}{2}{0}{1}
