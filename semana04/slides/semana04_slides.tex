@@ -1,0 +1,447 @@
+\documentclass[xcolor=dvipsnames,t,aspectratio=169]{beamer}
+
+\usecolortheme{rose}
+\usecolortheme{dolphin}
+\usetheme{Boadilla}
+
+\input{../../templates/slides/imports}
+\input{../../templates/slides/settings}
+\input{../../templates/slides/commands}
+
+\titlegraphic{
+    \includegraphics[scale = 0.5]{../../templates/slides/logo}
+}
+
+\logo{
+\begin{tikzpicture}[overlay,remember picture]
+\node[xshift=-.75cm, yshift=-1cm] at (current page.30){
+    \includegraphics[width=0.1\textwidth]{../../templates/slides/logo}};
+\end{tikzpicture}
+}
+\usetikzlibrary{positioning}
+
+\newcommand{\highlight}[1]{{\color{nes_dark_orange} #1}}
+
+\title{Pandas: manipulação e limpeza de dados}
+
+\author{Eduardo Adame}
+
+\date{{\color{nes_dark_purple}\textbf{Ciência de Dados}\\[0.5em] 27 de março de 2026 }}
+
+\begin{document}
+
+\frame[plain]{\titlepage}
+\setcounter{framenumber}{0}
+
+
+% ============================================================
+\section{Introdução}
+% ============================================================
+
+\begin{frame}[c]{Por que Pandas?}
+
+NumPy é excelente para álgebra — mas dados reais têm \highlight{colunas heterogêneas}, \highlight{rótulos}, \highlight{valores faltantes} e \highlight{estrutura tabular}.
+
+% Sugestão de imagem: tabela CSV aberta no Excel / VS Code ao lado de um DataFrame renderizado no Jupyter — para ilustrar "dados no mundo real vs. dados no código"
+
+\begin{itemize}
+    \item Pandas adiciona \highlight{rótulos} a arrays NumPy
+    \item Suporte nativo a dados faltantes (\texttt{NaN})
+    \item Leitura/escrita de CSV, Excel, SQL, JSON, \ldots
+    \item Operações de agrupamento, merge e reshape
+\end{itemize}
+
+\begin{display}[Regra de ouro]
+NumPy para matrizes numéricas. Pandas para dados tabulares do mundo real.
+\end{display}
+
+\end{frame}
+
+
+\begin{frame}[c]{As duas estruturas principais}
+
+\begin{columns}
+\column{0.48\textwidth}
+\textbf{\color{nes_dark_purple}Series}
+\begin{itemize}
+    \item Array 1-D com \highlight{índice}
+    \item Uma coluna de uma tabela
+    \item \texttt{pd.Series}
+\end{itemize}
+
+\column{0.48\textwidth}
+\textbf{\color{nes_dark_purple}DataFrame}
+\begin{itemize}
+    \item Tabela 2-D com \highlight{índice} e \highlight{colunas}
+    \item Coleção de Series
+    \item \texttt{pd.DataFrame}
+\end{itemize}
+\end{columns}
+
+\vspace{1em}
+
+% Sugestão de imagem: diagrama mostrando que um DataFrame é composto por várias Series verticais com um índice compartilhado — estilo "anatomia do DataFrame"
+
+\begin{display}[Importante]
+Todo DataFrame é um dicionário de Series com índice compartilhado.
+\end{display}
+
+\end{frame}
+
+
+% ============================================================
+\section{Series}
+% ============================================================
+
+\begin{frame}[c, fragile]{Criando uma Series}
+
+\begin{code}[A partir de lista]{python}
+import pandas as pd
+
+s = pd.Series([10, 20, 30])
+s = pd.Series([10, 20, 30], index=["a", "b", "c"])
+\end{code}
+
+\begin{code}[A partir de dicionário]{python}
+s = pd.Series({"rio": 6.7, "sp": 12.3, "bh": 2.7})
+\end{code}
+
+\begin{itemize}
+    \item O índice pode ser \highlight{inteiro, string ou datetime}
+    \item \texttt{s.values} retorna o array NumPy subjacente
+    \item \texttt{s.index} retorna o objeto índice
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{Indexação em Series}
+
+\begin{code}[Por rótulo e por posição]{python}
+s = pd.Series([10, 20, 30], index=["a", "b", "c"])
+
+s["b"]          # por rótulo  -> 20
+s.iloc[1]       # por posição -> 20
+s[["a", "c"]]   # seleção múltipla
+s["a":"b"]      # slice por rótulo (inclusivo)
+\end{code}
+
+\begin{display}[Atenção]
+\texttt{s[1]} pode ser ambíguo. Prefira \texttt{.loc} (rótulo) ou \texttt{.iloc} (posição) explicitamente.
+\end{display}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{Operações e vetorização}
+
+\begin{code}[Operações elementwise]{python}
+s = pd.Series([1, 2, 3, 4])
+
+s * 2
+s ** 2
+s + s           # alinhamento por índice!
+\end{code}
+
+\begin{code}[Funções de redução]{python}
+s.sum()
+s.mean()
+s.describe()    # estatísticas resumidas
+\end{code}
+
+\begin{itemize}
+    \item Pandas \highlight{alinha pelo índice} antes de operar
+    \item Índices incompatíveis geram \texttt{NaN} automaticamente
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{Valores faltantes}
+
+\begin{code}[Detectar e tratar]{python}
+s = pd.Series([1.0, None, 3.0, None])
+
+s.isna()            # máscara booleana
+s.dropna()          # remove NaN
+s.fillna(0)         # substitui NaN por 0
+s.fillna(s.mean())  # substitui pela média
+\end{code}
+
+\begin{itemize}
+    \item \texttt{NaN} é \highlight{contagioso}: operações com \texttt{NaN} retornam \texttt{NaN}
+    \item \texttt{sum()}, \texttt{mean()} ignoram \texttt{NaN} por padrão
+\end{itemize}
+
+\begin{display}[Regra prática]
+Sempre verifique \texttt{s.isna().sum()} antes de analisar dados novos.
+\end{display}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{\texttt{apply()} em Series}
+
+\begin{code}[Aplicar função personalizada]{python}
+s = pd.Series(["  Rio  ", "São Paulo", "belo horizonte"])
+
+s.apply(str.strip)
+s.apply(str.title)
+s.apply(lambda x: len(x))
+\end{code}
+
+\begin{code}[Alternativa vetorizada para strings]{python}
+s.str.strip()
+s.str.title()
+s.str.len()
+\end{code}
+
+\begin{itemize}
+    \item \texttt{apply()} aceita qualquer função Python
+    \item \highlight{Prefira} \texttt{.str}, \texttt{.dt} quando disponível — mais rápido
+\end{itemize}
+
+\end{frame}
+
+
+% ============================================================
+\section{DataFrame}
+% ============================================================
+
+\begin{frame}[c, fragile]{Criando um DataFrame}
+
+\begin{code}[A partir de dicionário]{python}
+df = pd.DataFrame({
+    "nome":  ["Ana", "Bruno", "Carla"],
+    "idade": [28, 34, 22],
+    "nota":  [8.5, 7.0, 9.2],
+})
+\end{code}
+
+\begin{code}[Leitura de CSV]{python}
+df = pd.read_csv("dados.csv")
+df.to_csv("saida.csv", index=False)
+\end{code}
+
+\begin{itemize}
+    \item \texttt{df.shape}, \texttt{df.dtypes}, \texttt{df.head()}, \texttt{df.info()}
+    \item Inspecione \highlight{sempre} antes de analisar
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{Indexação em DataFrame}
+
+\begin{code}[Colunas e linhas]{python}
+df["nome"]              # Series da coluna
+df[["nome", "nota"]]    # sub-DataFrame
+
+df.loc[0]               # linha por rótulo
+df.loc[0, "nota"]       # célula por rótulo
+df.iloc[0, 2]           # célula por posição
+\end{code}
+
+\begin{code}[Filtro booleano]{python}
+df[df["nota"] > 8]
+df[(df["idade"] < 30) & (df["nota"] > 8)]
+\end{code}
+
+\begin{display}[Atenção]
+\texttt{df["col"]} retorna uma \texttt{Series}. \texttt{df[["col"]]} retorna um \texttt{DataFrame}.
+\end{display}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{Operações e \texttt{apply()}}
+
+\begin{code}[Criar e transformar colunas]{python}
+df["aprovado"] = df["nota"] >= 7.0
+df["nota_norm"] = (df["nota"] - df["nota"].min()) \
+                / (df["nota"].max() - df["nota"].min())
+\end{code}
+
+\begin{code}[apply() por coluna ou linha]{python}
+df["nota"].apply(lambda x: "A" if x >= 9 else "B")
+
+df.apply(lambda row: row["nota"] * 1.1, axis=1)
+\end{code}
+
+\begin{itemize}
+    \item \texttt{axis=0} opera sobre linhas (padrão)
+    \item \texttt{axis=1} opera sobre colunas da linha
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{\texttt{merge()} — combinando tabelas}
+
+\begin{code}[Inner join]{python}
+alunos   = pd.DataFrame({"id": [1,2,3], "nome": ["A","B","C"]})
+notas    = pd.DataFrame({"id": [1,2,4], "nota": [8,7,9]})
+
+pd.merge(alunos, notas, on="id")             # inner (padrão)
+pd.merge(alunos, notas, on="id", how="left") # left join
+\end{code}
+
+\begin{itemize}
+    \item \texttt{how}: \texttt{"inner"}, \texttt{"left"}, \texttt{"right"}, \texttt{"outer"}
+    \item Equivalente ao JOIN do SQL
+    \item Use \texttt{on} para chave comum; \texttt{left\_on}/\texttt{right\_on} para nomes distintos
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{Agregação e \texttt{groupby()}}
+
+\begin{code}[Agrupamento básico]{python}
+df.groupby("turma")["nota"].mean()
+df.groupby("turma")["nota"].agg(["mean", "std", "count"])
+\end{code}
+
+\begin{code}[Múltiplas colunas]{python}
+df.groupby(["turma", "aprovado"]).agg(
+    media=("nota", "mean"),
+    total=("nota", "count"),
+)
+\end{code}
+
+\begin{display}[Padrão Split–Apply–Combine]
+\texttt{groupby()} divide os dados, aplica uma função a cada grupo, e combina os resultados.
+\end{display}
+
+\end{frame}
+
+
+% ============================================================
+\section{Avançado}
+% ============================================================
+
+\begin{frame}[c, fragile]{Strings e datas}
+
+\begin{code}[Accessor .str]{python}
+df["nome"].str.lower()
+df["nome"].str.contains("Silva")
+df["nome"].str.replace("Dr. ", "", regex=False)
+\end{code}
+
+\begin{code}[Accessor .dt]{python}
+df["data"] = pd.to_datetime(df["data"])
+
+df["data"].dt.year
+df["data"].dt.month
+df["data"].dt.day_name()
+\end{code}
+
+\begin{itemize}
+    \item \texttt{.str} e \texttt{.dt} são \highlight{vetorizados} — evite \texttt{apply()} para isso
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{Reshape: \texttt{pivot\_table()} e \texttt{melt()}}
+
+\begin{code}[De longo para largo]{python}
+df.pivot_table(
+    values="nota",
+    index="aluno",
+    columns="disciplina",
+    aggfunc="mean",
+)
+\end{code}
+
+\begin{code}[De largo para longo]{python}
+pd.melt(df, id_vars=["aluno"],
+        value_vars=["mat", "por"],
+        var_name="disciplina",
+        value_name="nota")
+\end{code}
+
+% Sugestão de imagem: diagrama visual mostrando pivot (largo) e melt (longo) com tabelas de exemplo lado a lado — estilo "wide vs. long format"
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{View vs. Copy — armadilha clássica}
+
+\begin{code}[Problema]{python}
+sub = df[df["nota"] > 7]
+sub["nota"] = 10        # SettingWithCopyWarning!
+\end{code}
+
+\begin{code}[Solução]{python}
+sub = df[df["nota"] > 7].copy()
+sub["nota"] = 10        # seguro
+\end{code}
+
+\begin{display}[Regra]
+Sempre use \texttt{.copy()} ao criar um subconjunto que você pretende modificar.
+\end{display}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{Limpeza de dados — checklist}
+
+\begin{code}[Inspeção inicial]{python}
+df.info()           # tipos e não-nulos
+df.isna().sum()     # contagem de NaN por coluna
+df.duplicated().sum()
+df.describe()
+\end{code}
+
+\begin{code}[Limpeza]{python}
+df = df.drop_duplicates()
+df = df.dropna(subset=["coluna_chave"])
+df["coluna"] = df["coluna"].astype(float)
+df.columns = df.columns.str.strip().str.lower()
+\end{code}
+
+\begin{itemize}
+    \item Padronize nomes de colunas \highlight{primeiro}
+    \item Corrija tipos \highlight{antes} de calcular qualquer coisa
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{Pipeline de análise}
+
+\begin{code}[Encadeamento com method chaining]{python}
+resultado = (
+    pd.read_csv("vendas.csv")
+      .rename(columns=str.lower)
+      .dropna(subset=["preco", "quantidade"])
+      .assign(total=lambda df: df["preco"] * df["quantidade"])
+      .groupby("categoria")["total"]
+      .sum()
+      .sort_values(ascending=False)
+)
+\end{code}
+
+\begin{itemize}
+    \item \highlight{Method chaining} torna pipelines legíveis e reproduzíveis
+    \item Use \texttt{.assign()} para criar colunas sem quebrar a cadeia
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[c, noframenumbering, plain]
+    \frametitle{~}
+        \vfill
+        \begin{center}
+            {\Huge Obrigado!}\vspace{1.5em}\\
+            {\Large \highlight{Alguma dúvida?}}\\
+        \end{center}
+        \vfill
+        \begin{center}
+            {\small Agora vamos para os exercícios!}
+        \end{center}
+\end{frame}
+
+\end{document}

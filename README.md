@@ -27,21 +27,21 @@ Este curso faz parte do Módulo V do NES
 |------|------|------|------|
 | 1 | 04/03/2026 | Introdução ao curso + Linux, Shell e organização de projetos | [Slides](semana01/slides/) \| [Notebook](semana01/notebook/) \| [Exercícios](semana01/exercicios/) |
 | 2 | 11/03/2026 | Git, Github e Ambientes de Desenvolvimento | [Slides](semana02/slides/) \| [Notebook](semana02/notebook/) \| [Exercícios](semana02/exercicios/) |
-| 3 | 18/03/2026 | NumPy e computação numérica | [Slides](semana03/slides/) \| [Notebook](semana03/notebook/) \| [Exercícios](semana03/exercicios/) |
-| 4 | 25/03/2026 | Pandas: manipulação e limpeza de dados | [Slides](semana04/slides/) \| [Notebook](semana04/notebook/) \| [Exercícios](semana04/exercicios/) |
-| 5 | 01/04/2026 | Visualização de dados e análise exploratória (EDA) | [Slides](semana05/slides/) \| [Notebook](semana05/notebook/) \| [Exercícios](semana05/exercicios/) |
-| 6 | 08/04/2026 | Formatos de dados (CSV, JSON, Parquet) + Bancos de dados | [Slides](semana06/slides/) \| [Notebook](semana06/notebook/) \| [Exercícios](semana06/exercicios/) |
-| AV1 | 08/04/2026 | Enunciado da Avaliação 1 | [Enunciado](av1/enunciado.pdf) |
-| 7 | 15/04/2026 | Feature Engineering e pipelines de dados | [Slides](semana07/slides/) \| [Notebook](semana07/notebook/) \| [Exercícios](semana07/exercicios/) |
-| AV1 | 22/04/2026 | Apresentações da Avaliação 1 | ... |
-| 9 | 29/04/2026 | Web Scraping e APIs | [Slides](semana09/slides/) \| [Notebook](semana09/notebook/) \| [Exercícios](semana09/exercicios/) |
-| 10 | 06/05/2026 | Clusterização (K-Means, DBSCAN) | [Slides](semana10/slides/) \| [Notebook](semana10/notebook/) \| [Exercícios](semana10/exercicios/) |
-| 11 | 13/05/2026 | Busca textual e ranking (TF-IDF, PageRank) | [Slides](semana11/slides/) \| [Notebook](semana11/notebook/) \| [Exercícios](semana11/exercicios/) |
-| 12 | 20/05/2026 | Processamento de linguagem natural (NLP) | [Slides](semana12/slides/) \| [Notebook](semana12/notebook/) \| [Exercícios](semana12/exercicios/) |
-| 13 | 27/05/2026 | Séries temporais | [Slides](semana13/slides/) \| [Notebook](semana13/notebook/) \| [Exercícios](semana13/exercicios/) |
-| AV2 | 03/06/2026 | Enunciado da Avaliação 2 | [Enunciado](av2/enunciado.pdf) |
-| 15 | 10/06/2026 | ETL e dashboards interativos (Streamlit) | [Slides](semana15/slides/) \| [Notebook](semana15/notebook/) \| [Exercícios](semana15/exercicios/) |
-| AV2 | 17/06/2026 | Apresentações da Avaliação 2 | ... |
+| 3 | 20/03/2026 | NumPy e computação numérica | [Slides](semana03/slides/) \| [Notebook](semana03/notebook/) \| [Exercícios](semana03/exercicios/) |
+| 4 | 27/03/2026 | Pandas: manipulação e limpeza de dados | [Slides](semana04/slides/) \| [Notebook](semana04/notebook/) \| [Exercícios](semana04/exercicios/) |
+| 5 | 03/04/2026 | Visualização de dados e análise exploratória (EDA) | [Slides](semana05/slides/) \| [Notebook](semana05/notebook/) \| [Exercícios](semana05/exercicios/) |
+| 6 | 11/04/2026 | Formatos de dados (CSV, JSON, Parquet) + Bancos de dados | [Slides](semana06/slides/) \| [Notebook](semana06/notebook/) \| [Exercícios](semana06/exercicios/) |
+| AV1 | 11/04/2026 | Enunciado da Avaliação 1 | [Enunciado](av1/enunciado.pdf) |
+| 7 | 17/04/2026 | Feature Engineering e pipelines de dados | [Slides](semana07/slides/) \| [Notebook](semana07/notebook/) \| [Exercícios](semana07/exercicios/) |
+| AV1 | 24/04/2026 | Apresentações da Avaliação 1 | ... |
+| 9 | 01/05/2026 | Web Scraping e APIs | [Slides](semana09/slides/) \| [Notebook](semana09/notebook/) \| [Exercícios](semana09/exercicios/) |
+| 10 | 08/05/2026 | Clusterização (K-Means, DBSCAN) | [Slides](semana10/slides/) \| [Notebook](semana10/notebook/) \| [Exercícios](semana10/exercicios/) |
+| 11 | 15/05/2026 | Busca textual e ranking (TF-IDF, PageRank) | [Slides](semana11/slides/) \| [Notebook](semana11/notebook/) \| [Exercícios](semana11/exercicios/) |
+| 12 | 22/05/2026 | Processamento de linguagem natural (NLP) | [Slides](semana12/slides/) \| [Notebook](semana12/notebook/) \| [Exercícios](semana12/exercicios/) |
+| 13 | 29/05/2026 | Séries temporais | [Slides](semana13/slides/) \| [Notebook](semana13/notebook/) \| [Exercícios](semana13/exercicios/) |
+| AV2 | 05/06/2026 | Enunciado da Avaliação 2 | [Enunciado](av2/enunciado.pdf) |
+| 15 | 12/06/2026 | ETL e dashboards interativos (Streamlit) | [Slides](semana15/slides/) \| [Notebook](semana15/notebook/) \| [Exercícios](semana15/exercicios/) |
+| AV2 | 19/06/2026 | Apresentações da Avaliação 2 | ... |
 
 ---
 
