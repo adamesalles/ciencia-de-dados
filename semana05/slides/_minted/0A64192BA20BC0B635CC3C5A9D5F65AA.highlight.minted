@@ -1,0 +1,9 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{altair}\PYG{+w}{ }\PYG{k}{as}\PYG{+w}{ }\PYG{n+nn}{alt}
+\PYG{n}{alt}\PYG{o}{.}\PYG{n}{Chart}\PYG{p}{(}\PYG{n}{df}\PYG{p}{)}\PYG{o}{.}\PYG{n}{mark\PYGZus{}point}\PYG{p}{()}\PYG{o}{.}\PYG{n}{encode}\PYG{p}{(}
+    \PYG{n}{x}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}idade:Q\PYGZdq{}}\PYG{p}{,}      \PYG{c+c1}{\PYGZsh{} Q = quantitativo}
+    \PYG{n}{y}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}nota:Q\PYGZdq{}}\PYG{p}{,}
+    \PYG{n}{color}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}turma:N\PYGZdq{}}\PYG{p}{,}  \PYG{c+c1}{\PYGZsh{} N = nominal}
+    \PYG{n}{tooltip}\PYG{o}{=}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}nome\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}nota\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}turma\PYGZdq{}}\PYG{p}{]}
+\PYG{p}{)}
+\end{MintedVerbatim}

@@ -1,0 +1,11 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{plotly.express}\PYG{+w}{ }\PYG{k}{as}\PYG{+w}{ }\PYG{n+nn}{px}
+\PYG{n}{fig} \PYG{o}{=} \PYG{n}{px}\PYG{o}{.}\PYG{n}{histogram}\PYG{p}{(}\PYG{n}{df}\PYG{p}{,} \PYG{n}{x}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}nota\PYGZdq{}}\PYG{p}{,} \PYG{n}{color}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}turma\PYGZdq{}}\PYG{p}{,}
+                   \PYG{n}{nbins}\PYG{o}{=}\PYG{l+m+mi}{20}\PYG{p}{,} \PYG{n}{barmode}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}overlay\PYGZdq{}}\PYG{p}{,}
+                   \PYG{n}{title}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}Distribuição de notas por turma\PYGZdq{}}\PYG{p}{)}
+\PYG{n}{fig}\PYG{o}{.}\PYG{n}{show}\PYG{p}{()}
+\PYG{n}{fig} \PYG{o}{=} \PYG{n}{px}\PYG{o}{.}\PYG{n}{scatter}\PYG{p}{(}\PYG{n}{df}\PYG{p}{,} \PYG{n}{x}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}idade\PYGZdq{}}\PYG{p}{,} \PYG{n}{y}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}nota\PYGZdq{}}\PYG{p}{,}
+                 \PYG{n}{color}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}turma\PYGZdq{}}\PYG{p}{,} \PYG{n}{hover\PYGZus{}data}\PYG{o}{=}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}nome\PYGZdq{}}\PYG{p}{],}
+                 \PYG{n}{trendline}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}ols\PYGZdq{}}\PYG{p}{)}
+\PYG{n}{fig}\PYG{o}{.}\PYG{n}{show}\PYG{p}{()}
+\end{MintedVerbatim}

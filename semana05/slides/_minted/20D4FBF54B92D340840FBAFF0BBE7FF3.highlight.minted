@@ -1,0 +1,6 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{n}{g} \PYG{o}{=} \PYG{n}{sns}\PYG{o}{.}\PYG{n}{FacetGrid}\PYG{p}{(}\PYG{n}{df}\PYG{p}{,} \PYG{n}{col}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}turma\PYGZdq{}}\PYG{p}{,} \PYG{n}{height}\PYG{o}{=}\PYG{l+m+mi}{3}\PYG{p}{,} \PYG{n}{aspect}\PYG{o}{=}\PYG{l+m+mf}{1.2}\PYG{p}{)}
+\PYG{n}{g}\PYG{o}{.}\PYG{n}{map}\PYG{p}{(}\PYG{n}{sns}\PYG{o}{.}\PYG{n}{histplot}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}nota\PYGZdq{}}\PYG{p}{,} \PYG{n}{bins}\PYG{o}{=}\PYG{l+m+mi}{15}\PYG{p}{,} \PYG{n}{kde}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
+\PYG{n}{g}\PYG{o}{.}\PYG{n}{set\PYGZus{}axis\PYGZus{}labels}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}Nota\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}Frequência\PYGZdq{}}\PYG{p}{)}
+\PYG{n}{g}\PYG{o}{.}\PYG{n}{set\PYGZus{}titles}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}Turma }\PYG{l+s+si}{\PYGZob{}col\PYGZus{}name\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\end{MintedVerbatim}

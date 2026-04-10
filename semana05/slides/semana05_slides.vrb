@@ -1,0 +1,8 @@
+\frametitle{Altair — composição e interatividade}
+\begin{code}[Interatividade com uma linha]{python}
+selecao = alt.selection_point(fields=["turma"])
+pontos.add_params(selecao).encode(
+    opacity=alt.condition(selecao, alt.value(1), alt.value(0.1))
+)
+\end{code}
+

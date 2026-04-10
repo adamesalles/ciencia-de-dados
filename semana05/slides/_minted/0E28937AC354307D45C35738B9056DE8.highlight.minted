@@ -1,0 +1,4 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{seaborn}\PYG{+w}{ }\PYG{k}{as}\PYG{+w}{ }\PYG{n+nn}{sns}
+\PYG{n}{sns}\PYG{o}{.}\PYG{n}{set\PYGZus{}theme}\PYG{p}{(}\PYG{n}{style}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}whitegrid\PYGZdq{}}\PYG{p}{,} \PYG{n}{palette}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}muted\PYGZdq{}}\PYG{p}{)}
+\end{MintedVerbatim}

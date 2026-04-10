@@ -1,0 +1,5 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{n}{df}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}nota\PYGZdq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{plot}\PYG{o}{.}\PYG{n}{hist}\PYG{p}{(}\PYG{n}{bins}\PYG{o}{=}\PYG{l+m+mi}{20}\PYG{p}{)}
+\PYG{n}{df}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}nota\PYGZdq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{plot}\PYG{o}{.}\PYG{n}{kde}\PYG{p}{()}          \PYG{c+c1}{\PYGZsh{} densidade estimada}
+\PYG{n}{df}\PYG{o}{.}\PYG{n}{plot}\PYG{o}{.}\PYG{n}{scatter}\PYG{p}{(}\PYG{n}{x}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}x\PYGZdq{}}\PYG{p}{,} \PYG{n}{y}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}y\PYGZdq{}}\PYG{p}{)}
+\end{MintedVerbatim}

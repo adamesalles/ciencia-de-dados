@@ -1,0 +1,12 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{n}{fig}\PYG{o}{.}\PYG{n}{write\PYGZus{}html}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}grafico.html\PYGZdq{}}\PYG{p}{)}           \PYG{c+c1}{\PYGZsh{} interativo}
+\PYG{n}{fig}\PYG{o}{.}\PYG{n}{write\PYGZus{}image}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}grafico.png\PYGZdq{}}\PYG{p}{,} \PYG{n}{scale}\PYG{o}{=}\PYG{l+m+mi}{2}\PYG{p}{)}  \PYG{c+c1}{\PYGZsh{} requer kaleido}
+
+\PYG{c+c1}{\PYGZsh{} Customização com update\PYGZus{}layout}
+\PYG{n}{fig}\PYG{o}{.}\PYG{n}{update\PYGZus{}layout}\PYG{p}{(}
+    \PYG{n}{template}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}plotly\PYGZus{}white\PYGZdq{}}\PYG{p}{,}
+    \PYG{n}{font}\PYG{o}{=}\PYG{n+nb}{dict}\PYG{p}{(}\PYG{n}{family}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}Arial\PYGZdq{}}\PYG{p}{,} \PYG{n}{size}\PYG{o}{=}\PYG{l+m+mi}{13}\PYG{p}{),}
+    \PYG{n}{legend}\PYG{o}{=}\PYG{n+nb}{dict}\PYG{p}{(}\PYG{n}{orientation}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}h\PYGZdq{}}\PYG{p}{,} \PYG{n}{y}\PYG{o}{=\PYGZhy{}}\PYG{l+m+mf}{0.2}\PYG{p}{),}
+\PYG{p}{)}
+\PYG{n}{fig}\PYG{o}{.}\PYG{n}{update\PYGZus{}traces}\PYG{p}{(}\PYG{n}{marker\PYGZus{}opacity}\PYG{o}{=}\PYG{l+m+mf}{0.6}\PYG{p}{)}
+\end{MintedVerbatim}

@@ -1,0 +1,8 @@
+\babel@toc {brazil}{}\relax 
+\beamer@sectionintoc {1}{Motivação}{2}{0}{1}
+\beamer@sectionintoc {2}{Pandas .plot}{6}{0}{2}
+\beamer@sectionintoc {3}{Matplotlib}{8}{0}{3}
+\beamer@sectionintoc {4}{Seaborn}{11}{0}{4}
+\beamer@sectionintoc {5}{Plotly}{15}{0}{5}
+\beamer@sectionintoc {6}{Altair}{17}{0}{6}
+\beamer@sectionintoc {7}{Colormaps e tipos de dados}{21}{0}{7}

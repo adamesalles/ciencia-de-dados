@@ -1,0 +1,7 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{pandas}\PYG{+w}{ }\PYG{k}{as}\PYG{+w}{ }\PYG{n+nn}{pd}
+\PYG{n}{df}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}nota\PYGZdq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{(}\PYG{n}{kind}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}hist\PYGZdq{}}\PYG{p}{,} \PYG{n}{bins}\PYG{o}{=}\PYG{l+m+mi}{20}\PYG{p}{,} \PYG{n}{title}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}Distribuição de notas\PYGZdq{}}\PYG{p}{)}
+\PYG{n}{df}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}nota\PYGZdq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{(}\PYG{n}{kind}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}box\PYGZdq{}}\PYG{p}{)}
+\PYG{n}{df}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{(}\PYG{n}{kind}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}scatter\PYGZdq{}}\PYG{p}{,} \PYG{n}{x}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}idade\PYGZdq{}}\PYG{p}{,} \PYG{n}{y}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}nota\PYGZdq{}}\PYG{p}{)}
+\PYG{n}{df}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}turma\PYGZdq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{value\PYGZus{}counts}\PYG{p}{()}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{(}\PYG{n}{kind}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}bar\PYGZdq{}}\PYG{p}{)}
+\end{MintedVerbatim}

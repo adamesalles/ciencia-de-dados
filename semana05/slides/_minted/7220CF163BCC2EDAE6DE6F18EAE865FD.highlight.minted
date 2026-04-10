@@ -1,0 +1,12 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{n}{base} \PYG{o}{=} \PYG{n}{alt}\PYG{o}{.}\PYG{n}{Chart}\PYG{p}{(}\PYG{n}{df}\PYG{p}{)}
+\PYG{n}{pontos} \PYG{o}{=} \PYG{n}{base}\PYG{o}{.}\PYG{n}{mark\PYGZus{}point}\PYG{p}{(}\PYG{n}{opacity}\PYG{o}{=}\PYG{l+m+mf}{0.5}\PYG{p}{)}\PYG{o}{.}\PYG{n}{encode}\PYG{p}{(}
+    \PYG{n}{x}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}idade:Q\PYGZdq{}}\PYG{p}{,} \PYG{n}{y}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}nota:Q\PYGZdq{}}\PYG{p}{,} \PYG{n}{color}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}turma:N\PYGZdq{}}
+\PYG{p}{)}
+\PYG{n}{linha} \PYG{o}{=} \PYG{n}{base}\PYG{o}{.}\PYG{n}{mark\PYGZus{}rule}\PYG{p}{(}\PYG{n}{color}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}red\PYGZdq{}}\PYG{p}{)}\PYG{o}{.}\PYG{n}{encode}\PYG{p}{(}
+    \PYG{n}{y}\PYG{o}{=}\PYG{n}{alt}\PYG{o}{.}\PYG{n}{datum}\PYG{p}{(}\PYG{l+m+mf}{6.0}\PYG{p}{)}          \PYG{c+c1}{\PYGZsh{} linha de aprovação}
+\PYG{p}{)}
+\PYG{n}{grafico} \PYG{o}{=} \PYG{p}{(}\PYG{n}{pontos} \PYG{o}{+} \PYG{n}{linha}\PYG{p}{)}\PYG{o}{.}\PYG{n}{properties}\PYG{p}{(}\PYG{n}{width}\PYG{o}{=}\PYG{l+m+mi}{400}\PYG{p}{,} \PYG{n}{height}\PYG{o}{=}\PYG{l+m+mi}{300}\PYG{p}{)}
+\PYG{c+c1}{\PYGZsh{} Facetamento}
+\PYG{n}{grafico}\PYG{o}{.}\PYG{n}{facet}\PYG{p}{(}\PYG{n}{column}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}turma:N\PYGZdq{}}\PYG{p}{)}
+\end{MintedVerbatim}

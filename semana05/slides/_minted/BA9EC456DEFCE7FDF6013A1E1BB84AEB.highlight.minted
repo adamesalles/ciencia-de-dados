@@ -1,0 +1,11 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{n}{fig}\PYG{p}{,} \PYG{n}{axes} \PYG{o}{=} \PYG{n}{plt}\PYG{o}{.}\PYG{n}{subplots}\PYG{p}{(}\PYG{n}{nrows}\PYG{o}{=}\PYG{l+m+mi}{2}\PYG{p}{,} \PYG{n}{ncols}\PYG{o}{=}\PYG{l+m+mi}{2}\PYG{p}{,} \PYG{n}{figsize}\PYG{o}{=}\PYG{p}{(}\PYG{l+m+mi}{10}\PYG{p}{,} \PYG{l+m+mi}{7}\PYG{p}{))}
+\PYG{n}{axes}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+m+mi}{0}\PYG{p}{]}\PYG{o}{.}\PYG{n}{hist}\PYG{p}{(}\PYG{n}{df}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}nota\PYGZus{}p1\PYGZdq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{dropna}\PYG{p}{(),} \PYG{n}{bins}\PYG{o}{=}\PYG{l+m+mi}{20}\PYG{p}{,} \PYG{n}{color}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}\PYGZsh{}5B2D8E\PYGZdq{}}\PYG{p}{)}
+\PYG{n}{axes}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{]}\PYG{o}{.}\PYG{n}{hist}\PYG{p}{(}\PYG{n}{df}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}nota\PYGZus{}p2\PYGZdq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{dropna}\PYG{p}{(),} \PYG{n}{bins}\PYG{o}{=}\PYG{l+m+mi}{20}\PYG{p}{,} \PYG{n}{color}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}\PYGZsh{}E8650A\PYGZdq{}}\PYG{p}{)}
+\PYG{n}{axes}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{l+m+mi}{0}\PYG{p}{]}\PYG{o}{.}\PYG{n}{hist}\PYG{p}{(}\PYG{n}{df}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}nota\PYGZus{}p3\PYGZdq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{dropna}\PYG{p}{(),} \PYG{n}{bins}\PYG{o}{=}\PYG{l+m+mi}{20}\PYG{p}{,} \PYG{n}{color}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}\PYGZsh{}2D8E5B\PYGZdq{}}\PYG{p}{)}
+\PYG{n}{axes}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{]}\PYG{o}{.}\PYG{n}{boxplot}\PYG{p}{([}\PYG{n}{df}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}nota\PYGZus{}p1\PYGZdq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{dropna}\PYG{p}{(),}
+                    \PYG{n}{df}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}nota\PYGZus{}p2\PYGZdq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{dropna}\PYG{p}{(),}
+                    \PYG{n}{df}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}nota\PYGZus{}p3\PYGZdq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{dropna}\PYG{p}{()])}
+\PYG{n}{fig}\PYG{o}{.}\PYG{n}{suptitle}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}Distribuição por prova\PYGZdq{}}\PYG{p}{,} \PYG{n}{fontsize}\PYG{o}{=}\PYG{l+m+mi}{14}\PYG{p}{)}
+\PYG{n}{fig}\PYG{o}{.}\PYG{n}{tight\PYGZus{}layout}\PYG{p}{()}
+\end{MintedVerbatim}

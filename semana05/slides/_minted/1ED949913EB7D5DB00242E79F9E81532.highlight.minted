@@ -1,0 +1,6 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{n}{selecao} \PYG{o}{=} \PYG{n}{alt}\PYG{o}{.}\PYG{n}{selection\PYGZus{}point}\PYG{p}{(}\PYG{n}{fields}\PYG{o}{=}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}turma\PYGZdq{}}\PYG{p}{])}
+\PYG{n}{pontos}\PYG{o}{.}\PYG{n}{add\PYGZus{}params}\PYG{p}{(}\PYG{n}{selecao}\PYG{p}{)}\PYG{o}{.}\PYG{n}{encode}\PYG{p}{(}
+    \PYG{n}{opacity}\PYG{o}{=}\PYG{n}{alt}\PYG{o}{.}\PYG{n}{condition}\PYG{p}{(}\PYG{n}{selecao}\PYG{p}{,} \PYG{n}{alt}\PYG{o}{.}\PYG{n}{value}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{),} \PYG{n}{alt}\PYG{o}{.}\PYG{n}{value}\PYG{p}{(}\PYG{l+m+mf}{0.1}\PYG{p}{))}
+\PYG{p}{)}
+\end{MintedVerbatim}

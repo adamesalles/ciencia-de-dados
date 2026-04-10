@@ -1,0 +1,7 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{n}{df}\PYG{o}{.}\PYG{n}{groupby}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}turma\PYGZdq{}}\PYG{p}{)[}\PYG{l+s+s2}{\PYGZdq{}nota\PYGZdq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{(}\PYG{n}{kind}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}kde\PYGZdq{}}\PYG{p}{,} \PYG{n}{legend}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
+\PYG{c+c1}{\PYGZsh{} Múltiplas colunas lado a lado}
+\PYG{n}{df}\PYG{p}{[[}\PYG{l+s+s2}{\PYGZdq{}nota\PYGZus{}p1\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}nota\PYGZus{}p2\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}nota\PYGZus{}p3\PYGZdq{}}\PYG{p}{]]}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{(}\PYG{n}{kind}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}box\PYGZdq{}}\PYG{p}{)}
+\PYG{c+c1}{\PYGZsh{} Série temporal}
+\PYG{n}{df}\PYG{o}{.}\PYG{n}{set\PYGZus{}index}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}data\PYGZdq{}}\PYG{p}{)[}\PYG{l+s+s2}{\PYGZdq{}vendas\PYGZdq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{(}\PYG{n}{kind}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}line\PYGZdq{}}\PYG{p}{)}
+\end{MintedVerbatim}
