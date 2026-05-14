@@ -1,0 +1,736 @@
+\documentclass[xcolor=dvipsnames,t,aspectratio=169]{beamer}
+
+\usecolortheme{rose}
+\usecolortheme{dolphin}
+\usetheme{Boadilla}
+
+\input{../../templates/slides/imports}
+\input{../../templates/slides/settings}
+\input{../../templates/slides/commands}
+
+\titlegraphic{
+    \includegraphics[scale = 0.5]{../../templates/slides/logo}
+}
+
+\logo{
+\begin{tikzpicture}[overlay,remember picture]
+\node[xshift=-.75cm, yshift=-1cm] at (current page.30){
+    \includegraphics[width=0.1\textwidth]{../../templates/slides/logo}};
+\end{tikzpicture}
+}
+\usetikzlibrary{positioning}
+
+\newcommand{\highlight}[1]{{\color{nes_dark_orange} #1}}
+
+\title{Formatos de dados e bancos de dados}
+
+\author{Eduardo Adame}
+
+\date{{\color{nes_dark_purple}\textbf{Ciência de Dados}\\[0.5em] 24 de abril de 2026 }}
+
+\begin{document}
+
+\frame[plain]{\titlepage}
+\setcounter{framenumber}{0}
+
+
+% ============================================================
+\section{História e panorama}
+% ============================================================
+
+\begin{frame}[c]{Uma breve história dos dados}
+
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}Antes dos computadores}
+\begin{itemize}
+    \item Registros em papel, fichas perfuradas
+    \item Décadas de 1950--60: fitas magnéticas, acesso sequencial
+    \item 1970: Edgar Codd propõe o \highlight{modelo relacional}
+    \item 1979: primeiro SQL comercial (Oracle)
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}Era moderna}
+\begin{itemize}
+    \item Anos 2000: explosão da web $\Rightarrow$ \highlight{NoSQL}
+    \item 2006: Hadoop / HDFS — processamento distribuído
+    \item 2010s: Data Warehouses na nuvem (Redshift, BigQuery)
+    \item 2020s: formatos colunares open-source (\highlight{Parquet}, Arrow)
+\end{itemize}
+\end{columns}
+
+\vspace{0.8em}
+
+\begin{display}[Lei de Codd]
+Dados devem ser acessados pelo \emph{conteúdo}, não pela localização física.
+\end{display}
+
+\end{frame}
+
+
+\begin{frame}[c]{O ecossistema atual de armazenamento}
+
+% Sugestão de imagem: diagrama em camadas mostrando Arquivos (CSV/JSON/Parquet) → SGBDs (SQLite/Postgres/MySQL) → Data Warehouse (BigQuery/Redshift) → Data Lake (S3/GCS) com setas indicando fluxo de dados
+
+\begin{figure}
+    \includegraphics[height=.78\textheight]{storage_ecosystem.png}
+\end{figure}
+
+\end{frame}
+
+
+% ============================================================
+\section{Formatos de arquivo}
+% ============================================================
+
+\begin{frame}[c]{CSV — o mínimo denominador comum}
+
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}Vantagens}
+\begin{itemize}
+    \item Legível por humanos e qualquer ferramenta
+    \item Universal — Excel, R, Python, SQL, \ldots
+    \item Fácil de inspecionar e depurar
+\end{itemize}
+
+\vspace{0.5em}
+\textbf{\color{nes_dark_purple}Desvantagens}
+\begin{itemize}
+    \item Sem tipos — tudo vira string
+    \item Sem esquema embutido
+    \item Lento para arquivos grandes
+    \item Delimitador pode colidir com os dados
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}Armadilhas clássicas}
+\begin{itemize}
+    \item Encoding: \texttt{UTF-8} vs. \texttt{latin-1}
+    \item Separador decimal: \texttt{3.14} vs. \texttt{3,14}
+    \item Datas: \texttt{DD/MM/AAAA} vs. \texttt{YYYY-MM-DD}
+    \item \texttt{NULL}, \texttt{NA}, \texttt{""}, \texttt{-} — qual é o faltante?
+\end{itemize}
+\end{columns}
+
+% % \vspace{0.7em}
+% \begin{display}[Regra prática]
+% CSV para dados pequenos (\textless 100 MB) e comunicação entre ferramentas. Para produção, use Parquet.
+% \end{display}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{JSON — dados semiestruturados}
+
+\begin{columns}
+\column{0.52\textwidth}
+\begin{code}[Estrutura típica]{json}
+{
+  "aluno": "Ana Silva",
+  "turma": "A",
+  "notas": [8.5, 7.0, 9.2],
+  "endereco": {
+    "cidade": "Rio de Janeiro",
+    "uf": "RJ"
+  }
+}
+\end{code}
+
+\column{0.45\textwidth}
+\textbf{\color{nes_dark_purple}Características}
+\begin{itemize}
+    \item \highlight{Hierárquico} — aninhamento nativo
+    \item Tipos primitivos: string, número, bool, null
+    \item Padrão da web (APIs REST)
+    \item Sem esquema obrigatório
+\end{itemize}
+
+\vspace{0.4em}
+\textbf{\color{nes_dark_purple}Variantes}
+\begin{itemize}
+    \item \texttt{NDJSON} / \texttt{JSON Lines} — uma linha por registro
+    \item \texttt{GeoJSON} — dados geoespaciais
+\end{itemize}
+\end{columns}
+
+\end{frame}
+
+
+\begin{frame}[c]{Parquet — o formato colunar}
+
+% Sugestão de imagem: diagrama comparando armazenamento linha-a-linha (CSV/row-oriented) vs. colunar (Parquet), mostrando que a consulta de uma coluna lê muito menos dados no formato colunar
+
+\begin{figure}
+    \includegraphics[height=.78\textheight]{row_columnar.png}
+\end{figure}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{Parquet na prática}
+
+\begin{code}[Leitura e escrita com Pandas]{python}
+import pandas as pd
+
+# Escrita
+df.to_parquet("dados.parquet", index=False)
+df.to_parquet("dados.parquet", compression="snappy")  # padrão
+
+# Leitura
+df = pd.read_parquet("dados.parquet")
+
+# Leitura seletiva de colunas (vantagem colunar!)
+df = pd.read_parquet("dados.parquet", columns=["nome", "media"])
+\end{code}
+
+\begin{itemize}
+    \item \highlight{Compressão nativa}: Snappy, Gzip, Zstd
+    \item \highlight{Esquema embutido}: tipos preservados automaticamente
+    \item \highlight{Predicate pushdown}: filtra antes de carregar na memória
+    \item Base do ecossistema Apache Arrow / DuckDB / Spark
+\end{itemize}
+
+\end{frame}
+
+
+% \begin{frame}[c]{Comparativo de formatos}
+
+% % Sugestão de imagem: tabela visual com linhas = formatos (CSV, JSON, Parquet, SQLite) e colunas = atributos (Legibilidade humana, Tipagem, Compressão, Velocidade de leitura, Suporte a esquema, Ideal para), com células coloridas por nível (verde/amarelo/vermelho)
+
+% \begin{figure}
+%     \includegraphics[height=.78\textheight]{formatos_comparativo.png}
+% \end{figure}
+
+% \end{frame}
+
+
+% ============================================================
+\section{Modelagem e arquitetura}
+% ============================================================
+
+\begin{frame}[c]{Conceitos fundamentais de modelagem}
+
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}CRUD}\\
+As quatro operações básicas:
+\begin{itemize}
+    \item \highlight{C}reate — inserir registros
+    \item \highlight{R}ead — consultar
+    \item \highlight{U}pdate — atualizar
+    \item \highlight{D}elete — remover
+\end{itemize}
+
+\vspace{0.6em}
+\textbf{\color{nes_dark_purple}Relações}
+\begin{itemize}
+    \item 1:1 — pessoa $\leftrightarrow$ passaporte
+    \item 1:N — turma $\leftrightarrow$ alunos
+    \item N:M — alunos $\leftrightarrow$ disciplinas
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}ETL vs. ELT}
+\begin{itemize}
+    \item \highlight{ETL}: Extrai $\to$ Transforma $\to$ Carrega\\
+    Dado limpo antes de entrar no destino
+    \item \highlight{ELT}: Extrai $\to$ Carrega $\to$ Transforma\\
+    Dado bruto no Data Lake; transforma depois
+\end{itemize}
+
+\vspace{0.5em}
+\begin{display}[Tendência moderna]
+ELT favorecido por Data Lakes e ferramentas como dbt.
+\end{display}
+\end{columns}
+
+\end{frame}
+
+
+\begin{frame}[c]{Star Schema — modelagem analítica}
+
+% Sugestão de imagem: diagrama clássico de Star Schema com uma tabela FATO central (ex: vendas) conectada por chaves estrangeiras a tabelas DIMENSÃO ao redor (tempo, produto, cliente, loja) — estilo "estrela" com setas saindo do centro
+
+\begin{figure}
+    \includegraphics[height=.78\textheight]{star_schema.png}
+\end{figure}
+
+\end{frame}
+
+
+\begin{frame}[c]{Data Lake, Data Warehouse e Data Swamp}
+
+\begin{columns}
+\column{0.33\textwidth}
+\textbf{\color{nes_dark_purple}Data Lake}
+\begin{itemize}
+    \item Dados brutos, qualquer formato
+    \item Barato, escalável
+    \item Esquema definido \emph{na leitura}
+    \item Ex: S3, GCS, ADLS
+\end{itemize}
+
+\column{0.33\textwidth}
+\textbf{\color{nes_dark_purple}Data Warehouse}
+\begin{itemize}
+    \item Dados limpos e estruturados
+    \item Esquema definido \emph{na escrita}
+    \item Otimizado para análise (OLAP)
+    \item Ex: BigQuery, Redshift, Snowflake
+\end{itemize}
+
+\column{0.33\textwidth}
+\textbf{\color{nes_dark_purple}Data Swamp}
+\begin{itemize}
+    \item Data Lake \highlight{sem governança}
+    \item Dados sem catálogo ou linhagem
+    \item Ninguém sabe o que está lá
+    \item Resultado de descuido operacional
+\end{itemize}
+\end{columns}
+
+\vspace{0.8em}
+
+\begin{display}[Lakehouse]
+Tendência atual: unificar Lake + Warehouse com formatos transacionais abertos (Delta Lake, Apache Iceberg).
+\end{display}
+
+\end{frame}
+
+
+% ============================================================
+\section{SQL e SGBDs}
+% ============================================================
+
+\begin{frame}[c, fragile]{SQL — a língua franca dos dados}
+
+\begin{code}[As quatro operações essenciais]{sql}
+-- CREATE (inserir)
+INSERT INTO alunos (nome, turma) VALUES ('Ana', 'A');
+
+-- READ (consultar)
+SELECT nome, media FROM alunos WHERE media >= 6.0
+ORDER BY media DESC LIMIT 10;
+
+-- UPDATE (atualizar)
+UPDATE alunos SET turma = 'B' WHERE id = 42;
+
+-- DELETE (remover)
+DELETE FROM alunos WHERE id = 42;
+\end{code}
+
+\begin{itemize}
+    \item SQL é \highlight{declarativo} — você diz \emph{o quê}, não \emph{como}
+    \item Padronizado (SQL-92, SQL:2023), com dialetos por SGBD
+    \item Habilidade transferível: SQLite, Postgres, MySQL, BigQuery, Spark SQL
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{SQL — JOINs e agregações}
+
+\begin{code}[JOIN e GROUP BY]{sql}
+-- Left join: todos os alunos, com professor se existir
+SELECT a.nome, a.media, p.professor
+FROM alunos a
+LEFT JOIN professores p ON a.turma = p.turma;
+
+-- Agregação por turma
+SELECT
+    turma,
+    COUNT(*)                          AS total,
+    ROUND(AVG(media), 2)              AS media_turma,
+    SUM(CASE WHEN media >= 6 THEN 1
+             ELSE 0 END)              AS aprovados
+FROM alunos
+GROUP BY turma
+ORDER BY media_turma DESC;
+\end{code}
+
+% \begin{display}[Ordem de execução]
+% \texttt{FROM} $\to$ \texttt{JOIN} $\to$ \texttt{WHERE} $\to$ \texttt{GROUP BY} $\to$ \texttt{HAVING} $\to$ \texttt{SELECT} $\to$ \texttt{ORDER BY} $\to$ \texttt{LIMIT}
+% \end{display}
+
+\end{frame}
+
+
+% \begin{frame}[c]{SGBDs — panorama}
+
+% % Sugestão de imagem: diagrama ou tabela visual comparando SQLite / MySQL-MariaDB / PostgreSQL / MongoDB nas dimensões: tipo (relacional/documento), uso típico, escala, licença, suporte a ACID — com ícones de cada SGBD
+
+% \begin{figure}
+%     \includegraphics[height=.78\textheight]{sgbds_comparativo.png}
+% \end{figure}
+
+% \end{frame}
+
+
+\begin{frame}[c, fragile]{SQLite — banco de dados em arquivo}
+
+\begin{code}[Uso direto em Python]{python}
+import sqlite3
+conn = sqlite3.connect("escola.db")   # cria o arquivo
+cur  = conn.cursor()
+
+cur.execute("""
+    CREATE TABLE IF NOT EXISTS alunos (
+        id      INTEGER PRIMARY KEY AUTOINCREMENT,
+        nome    TEXT    NOT NULL,
+        turma   TEXT,
+        media   REAL
+    )
+""")
+
+cur.execute("INSERT INTO alunos (nome, turma, media) VALUES (?,?,?)",
+            ("Ana", "A", 8.5))
+conn.commit()
+rows = cur.execute("SELECT * FROM alunos").fetchall()
+conn.close()
+\end{code}
+\end{frame}
+
+
+\begin{frame}[c, fragile]{SQLite — banco de dados em arquivo}
+
+
+\begin{itemize}
+    \item Banco \highlight{embutido} — sem servidor, sem instalação
+    \item Arquivo único portátil (\texttt{.db} ou \texttt{.sqlite})
+    \item Ideal para protótipos, apps desktop, testes
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{PostgreSQL e MySQL via Docker}
+
+\begin{code}[Subindo containers com Docker Compose]{yaml}
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: escola
+    ports: ["5432:5432"]
+
+  mysql:
+    image: mariadb:11
+    environment:
+      MARIADB_ROOT_PASSWORD: secret
+      MARIADB_DATABASE: escola
+    ports: ["3306:3306"]
+\end{code}
+\end{frame}
+
+\begin{frame}[c, fragile]{PostgreSQL e MySQL via Docker}
+
+\begin{code}[Iniciar e parar]{bash}
+docker compose up -d      # sobe em background
+docker compose down       # para e remove containers
+docker compose down -v    # remove volumes (dados) também
+\end{code}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{Dump e Load}
+
+\begin{code}[PostgreSQL]{bash}
+# Dump completo
+pg_dump -U admin escola > escola_backup.sql
+
+# Dump comprimido (recomendado para produção)
+pg_dump -U admin -Fc escola > escola_backup.dump
+
+# Load
+psql -U admin escola < escola_backup.sql
+pg_restore -U admin -d escola escola_backup.dump
+\end{code}
+
+\end{frame}
+
+\begin{frame}[c, fragile]{Dump e Load}
+
+\begin{code}[SQLite]{python}
+import sqlite3, pathlib
+
+# Dump (SQL puro)
+conn = sqlite3.connect("escola.db")
+pathlib.Path("backup.sql").write_text(
+    "\n".join(conn.iterdump())
+)
+
+# Load
+conn2 = sqlite3.connect("restaurado.db")
+conn2.executescript(pathlib.Path("backup.sql").read_text())
+\end{code}
+
+\end{frame}
+
+
+% ============================================================
+\section{SQLAlchemy}
+% ============================================================
+
+\begin{frame}[c, fragile]{SQLAlchemy — ORM e Core}
+
+SQLAlchemy oferece duas camadas: \highlight{Core} (SQL expressivo em Python) e \highlight{ORM} (mapeamento objeto-relacional).
+
+\begin{code}[Conexão e inserção com Core]{python}
+from sqlalchemy import create_engine, text
+
+# SQLite
+engine = create_engine("sqlite:///escola.db")
+
+# PostgreSQL (via Docker)
+engine = create_engine(
+    "postgresql+psycopg2://admin:secret@localhost:5432/escola"
+)
+
+with engine.connect() as conn:
+    conn.execute(text(
+        "INSERT INTO alunos (nome, turma, media) VALUES (:n, :t, :m)"
+    ), {"n": "Bruno", "t": "B", "m": 7.2})
+    conn.commit()
+\end{code}
+
+\begin{itemize}
+    \item \highlight{Connection string} muda o backend — código permanece igual
+    \item Suporta SQLite, PostgreSQL, MySQL, Oracle, MSSQL, \ldots
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{SQLAlchemy ORM}
+
+\begin{code}[Definindo modelos]{python}
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session
+
+class Base(DeclarativeBase): pass
+
+class Aluno(Base):
+    __tablename__ = "alunos"
+    id:    Mapped[int]   = mapped_column(primary_key=True)
+    nome:  Mapped[str]
+    turma: Mapped[str]
+    media: Mapped[float]
+
+Base.metadata.create_all(engine)
+
+with Session(engine) as session:
+    session.add(Aluno(nome="Carla", turma="C", media=9.1))
+    session.commit()
+
+    alunos = session.query(Aluno).filter(Aluno.media >= 7).all()
+\end{code}
+
+\begin{itemize}
+    \item ORM permite trabalhar com \highlight{objetos Python} em vez de SQL direto
+    \item Útil em aplicações web (FastAPI, Flask, Django)
+\end{itemize}
+
+\end{frame}
+
+
+% ============================================================
+\section{Integração com Pandas e Polars}
+% ============================================================
+
+\begin{frame}[c, fragile]{Pandas + SQL}
+
+\begin{code}[read\_sql e to\_sql]{python}
+import pandas as pd
+from sqlalchemy import create_engine
+
+engine = create_engine("sqlite:///escola.db")
+
+# Carregar tabela inteira
+df = pd.read_sql("SELECT * FROM alunos", engine)
+
+# Consulta com filtro
+df = pd.read_sql(
+    "SELECT nome, media FROM alunos WHERE turma = 'A'",
+    engine
+)
+
+# Escrever DataFrame de volta ao banco
+df_novo.to_sql("alunos_limpos", engine,
+               if_exists="replace", index=False)
+\end{code}
+
+\end{frame}
+\begin{frame}[c, fragile]{Pandas + SQL}
+
+\begin{itemize}
+    \item \texttt{if\_exists}: \texttt{"fail"} (padrão), \texttt{"replace"}, \texttt{"append"}
+    \item \texttt{chunksize} — escrita em lotes para tabelas grandes
+    \item Para leituras grandes: \texttt{pd.read\_sql(..., chunksize=10\_000)}
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{Polars + SQL}
+
+\begin{code}[Polars lê Parquet e faz SQL nativo]{python}
+import polars as pl
+# Leitura lazy (não carrega tudo na memória)
+df = pl.scan_parquet("dados.parquet")
+# API expressiva — compilada para execução otimizada
+resultado = (
+    df
+    .filter(pl.col("media") >= 6.0)
+    .group_by("turma")
+    .agg(
+        media_turma=pl.col("media").mean(),
+        total=pl.len(),
+    )
+    .sort("media_turma", descending=True)
+    .collect()  # executa o plano
+)
+# SQL diretamente sobre DataFrames
+ctx = pl.SQLContext(alunos=df)
+ctx.execute("SELECT turma, AVG(media) FROM alunos GROUP BY turma")
+\end{code}
+
+\end{frame}
+
+
+% \begin{frame}[c]{Pandas vs. Polars — quando usar cada um}
+
+% Sugestão de imagem: tabela comparativa Pandas vs Polars nas dimensões: Sintaxe, Lazy evaluation, Paralelismo nativo, Uso de memória, Ecossistema/integrações, Curva de aprendizado — com ícones ✓/✗ ou escalas visuais
+
+% \begin{figure}
+%     \includegraphics[height=.78\textheight]{pandas_vs_polars.png}
+% \end{figure}
+
+% \end{frame}
+
+
+% ============================================================
+\section{Paralelização}
+% ============================================================
+
+\begin{frame}[c]{Além do single-node: processamento distribuído}
+
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}Quando escalar?}
+\begin{itemize}
+    \item Dados \highlight{não cabem na RAM}
+    \item Transformações demoram horas
+    \item Necessidade de execução contínua (streaming)
+\end{itemize}
+
+\vspace{0.5em}
+\textbf{\color{nes_dark_purple}Ferramentas modernas}
+\begin{itemize}
+    \item \textbf{DuckDB} — SQL analítico in-process, multi-thread
+    \item \textbf{Polars} — paralelismo nativo em CPU
+    \item \textbf{Dask} — Pandas paralelo com API familiar
+    \item \textbf{PySpark} — Apache Spark via Python
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}Regra de bolso}
+
+\vspace{0.4em}
+\begin{tabular}{ll}
+\textbf{Tamanho}   & \textbf{Ferramenta} \\
+\hline
+\textless 1 GB     & Pandas / Polars     \\
+1--100 GB          & Polars / DuckDB     \\
+\textgreater 100 GB & Spark / Dask        \\
+\end{tabular}
+
+\vspace{0.8em}
+\begin{display}[Avisos]
+Spark tem overhead de cluster. Para \textless 50 GB num servidor, DuckDB supera Spark em velocidade e simplicidade.
+\end{display}
+\end{columns}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{DuckDB — SQL analítico ultra-rápido}
+
+\begin{code}[DuckDB lê Parquet sem carregar na RAM]{python}
+import duckdb
+
+# Consulta direta sobre arquivo — sem pd.read_parquet()!
+resultado = duckdb.sql("""
+    SELECT
+        turma,
+        AVG(media)   AS media_turma,
+        COUNT(*)     AS total
+    FROM read_parquet('dados.parquet')
+    WHERE media IS NOT NULL
+    GROUP BY turma
+    ORDER BY media_turma DESC
+""").df()   # converte para DataFrame Pandas
+
+# Registrar DataFrame Pandas como tabela virtual
+duckdb.register("alunos", df_pandas)
+duckdb.sql("SELECT * FROM alunos WHERE media >= 7").show()
+\end{code}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{PySpark — processamento distribuído}
+
+\begin{code}[Sessão local e operações básicas]{python}
+from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+spark = SparkSession.builder \
+    .appName("escola") \
+    .master("local[*]") \     # usa todos os cores locais
+    .getOrCreate()
+
+# Leitura
+df = spark.read.parquet("dados.parquet")
+# Transformações (lazy — não executam até .show() ou .write)
+resultado = (
+    df.filter(F.col("media") >= 6.0)
+      .groupBy("turma")
+      .agg(F.avg("media").alias("media_turma"),
+           F.count("*").alias("total"))
+      .orderBy("media_turma", ascending=False)
+)
+resultado.show()
+spark.stop()
+\end{code}
+
+\end{frame}
+
+
+% \begin{frame}[c]{Resumo — qual tecnologia para cada problema?}
+
+% Sugestão de imagem: fluxograma de decisão — "Dados cabem na RAM?" → Sim → "Precisa de SQL?" → Sim → DuckDB/SQLite/Postgres; Não → Pandas/Polars. "Dados cabem na RAM?" → Não → "Cluster disponível?" → Sim → PySpark; Não → DuckDB + Parquet particionado
+
+% \begin{figure}
+%     \includegraphics[height=.78\textheight]{decision_tree.png}
+% \end{figure}
+
+% \end{frame}
+
+
+\begin{frame}[c, noframenumbering, plain]
+    \frametitle{~}
+        \vfill
+        \begin{center}
+            {\Huge Obrigado!}\vspace{1.5em}\\
+            {\Large \highlight{Alguma dúvida?}}\\
+        \end{center}
+        \vfill
+        \begin{center}
+            {\small Agora vamos para os exercícios!}
+        \end{center}
+\end{frame}
+
+\end{document}
