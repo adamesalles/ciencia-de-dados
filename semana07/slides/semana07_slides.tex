@@ -1,0 +1,556 @@
+\documentclass[xcolor=dvipsnames,t,aspectratio=169]{beamer}
+
+\usecolortheme{rose}
+\usecolortheme{dolphin}
+\usetheme{Boadilla}
+
+\input{../../templates/slides/imports}
+\input{../../templates/slides/settings}
+\input{../../templates/slides/commands}
+
+\titlegraphic{
+    \includegraphics[scale = 0.5]{../../templates/slides/logo}
+}
+
+\logo{
+\begin{tikzpicture}[overlay,remember picture]
+\node[xshift=-.75cm, yshift=-1cm] at (current page.30){
+    \includegraphics[width=0.1\textwidth]{../../templates/slides/logo}};
+\end{tikzpicture}
+}
+\usetikzlibrary{positioning}
+
+\newcommand{\highlight}[1]{{\color{nes_dark_orange} #1}}
+
+\title{Feature Engineering, Web Scraping e APIs}
+
+\author{Eduardo Adame}
+
+\date{{\color{nes_dark_purple}\textbf{Ciência de Dados}\\[0.5em] 15 de maio de 2026 }}
+
+\begin{document}
+
+\frame[plain]{\titlepage}
+\setcounter{framenumber}{0}
+
+
+% ============================================================
+\section{Feature Engineering}
+% ============================================================
+
+\begin{frame}[c]{O que é Feature Engineering?}
+
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}Definição}
+\begin{itemize}
+    \item Processo de \highlight{criar, transformar e selecionar} variáveis a partir dos dados brutos
+    \item Objetivo: fornecer ao modelo informação mais relevante e na forma certa
+    \item Não é sobre o modelo — é sobre \highlight{o que você alimenta} nele
+\end{itemize}
+
+\textbf{\color{nes_dark_purple}Por que importa?}
+\begin{itemize}
+    \item Modelos simples com boas features batem modelos complexos com features ruins
+    \item Reduz overfitting ao eliminar ruído
+    \item Diminui custo computacional
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}Tipos de transformação}
+\begin{itemize}
+    \item \highlight{Numéricas}: normalização, log, binning, interações
+    \item \highlight{Categóricas}: encoding, target encoding, frequência
+    \item \highlight{Temporais}: hora, dia da semana, sazonalidade
+    \item \highlight{Texto}: TF-IDF, embeddings, contagem de tokens
+    \item \highlight{Derivadas}: razões, diferenças, agregações por grupo
+\end{itemize}
+\end{columns}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{Transformações numéricas}
+
+\begin{code}[Normalização e transformações]{python}
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
+
+# Padronização (média 0, desvio 1) — para modelos lineares e redes neurais
+scaler = StandardScaler()
+df["preco_std"] = scaler.fit_transform(df[["preco"]])
+# Min-Max (intervalo [0, 1]) — para KNN, SVM
+scaler_mm = MinMaxScaler()
+df["preco_norm"] = scaler_mm.fit_transform(df[["preco"]])
+# Log — para distribuições assimétricas (renda, preço de imóveis)
+df["preco_log"] = np.log1p(df["preco"])  # log1p = log(1 + x), evita log(0)
+# Binning — transformar contínua em ordinal
+df["faixa_preco"] = pd.cut(df["preco"],
+                           bins=[0, 100, 500, np.inf],
+                           labels=["barato", "médio", "caro"])
+\end{code}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{Encoding de variáveis categóricas}
+
+\begin{code}[One-Hot, Ordinal e Target Encoding]{python}
+# One-Hot Encoding — para categorias sem ordem (cor, cidade)
+df = pd.get_dummies(df, columns=["cidade"], drop_first=True)
+# Ordinal Encoding — para categorias com ordem (faixa etária, grau)
+from sklearn.preprocessing import OrdinalEncoder
+oe = OrdinalEncoder(categories=[["baixo", "médio", "alto"]])
+df["grau_enc"] = oe.fit_transform(df[["grau"]])
+# Target Encoding — substitui categoria pela média do alvo
+# (cuidado: vaza informação do alvo se não usar cross-fitting)
+media_por_cidade = df.groupby("cidade")["preco"].mean()
+df["cidade_target"] = df["cidade"].map(media_por_cidade)
+# Frequência — para alta cardinalidade (CEP, ID de produto)
+freq = df["produto_id"].value_counts(normalize=True)
+df["produto_freq"] = df["produto_id"].map(freq)
+\end{code}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{Features temporais e derivadas}
+
+\begin{code}[Extraindo informação de datas e criando interações]{python}
+df["data"] = pd.to_datetime(df["data"])
+
+# Decomposição temporal
+df["hora"]         = df["data"].dt.hour
+df["dia_semana"]   = df["data"].dt.dayofweek   # 0 = segunda
+df["mes"]          = df["data"].dt.month
+df["fim_de_semana"] = df["dia_semana"].isin([5, 6]).astype(int)
+
+# Sazonalidade cíclica — hora não é linear (23h e 0h são próximas!)
+df["hora_sin"] = np.sin(2 * np.pi * df["hora"] / 24)
+df["hora_cos"] = np.cos(2 * np.pi * df["hora"] / 24)
+
+# Features derivadas e interações
+df["preco_por_m2"]   = df["preco"] / df["area"]
+df["idade_km"]       = df["idade_carro"] * df["km_rodados"]  # interação
+df["media_por_grupo"] = df.groupby("cidade")["preco"] \
+                          .transform("mean")  # agregação sem vazar teste
+\end{code}
+
+\end{frame}
+
+
+% ============================================================
+\section{Model Selection e Cross-Validation}
+% ============================================================
+
+\begin{frame}[c]{O problema de avaliar modelos}
+
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}Por que não usar o treino para avaliar?}
+\begin{itemize}
+    \item O modelo \highlight{memoriza} os dados de treino
+    \item Erro de treino $\ll$ erro real — \emph{overfitting}
+    \item Precisamos estimar o desempenho em dados \highlight{nunca vistos}
+\end{itemize}
+
+\vspace{0.5em}
+\textbf{\color{nes_dark_purple}Holdout simples}
+\begin{itemize}
+    \item Separar treino / teste uma vez
+    \item Rápido, mas \highlight{instável}: depende da divisão
+    \item Com dados limitados, descarta informação valiosa
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}Cross-Validation}
+\begin{itemize}
+    \item Divide os dados em $k$ partes (\emph{folds})
+    \item Treina em $k-1$ e testa no fold restante
+    \item Repete $k$ vezes, rotacionando o fold de teste
+    \item Resultado: \highlight{média ± desvio} do erro nos $k$ folds
+\end{itemize}
+
+\vspace{0.5em}
+\begin{display}[Regra prática]
+$k = 5$ ou $k = 10$ são os valores mais usados. Estratifique para classificação desbalanceada.
+\end{display}
+\end{columns}
+
+\end{frame}
+
+
+\begin{frame}[c]{$k$-Fold Cross-Validation}
+
+\begin{figure}
+    \includegraphics[height=.78\textheight]{kfold_diagram.jpg}
+\end{figure}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{Cross-Validation na prática}
+
+\begin{code}[scikit-learn: avaliação e seleção de modelo]{python}
+from sklearn.model_selection import cross_val_score, StratifiedKFold
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+# Pipeline: pré-processamento + modelo em uma etapa
+pipe = Pipeline([
+    ("scaler", StandardScaler()),
+    ("clf",    RandomForestClassifier(n_estimators=100, random_state=42)),
+])
+cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+scores = cross_val_score(pipe, X, y,
+                         cv=cv, scoring="f1_weighted")
+print(f"F1: {scores.mean():.3f} ± {scores.std():.3f}")
+\end{code}
+
+\begin{itemize}
+    \item \texttt{Pipeline} garante que o \texttt{StandardScaler} \highlight{não veja o fold de teste}
+    \item Sem Pipeline, o scaler vazaria informação do teste para o treino
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}[c, fragile]{Seleção de hiperparâmetros}
+
+\begin{code}[GridSearchCV e RandomizedSearchCV]{python}
+from sklearn.model_selection import RandomizedSearchCV
+from scipy.stats import randint
+param_dist = {
+    "clf__n_estimators":  randint(50, 300),
+    "clf__max_depth":     [None, 5, 10, 20],
+    "clf__min_samples_split": randint(2, 20)}
+search = RandomizedSearchCV(
+    pipe,
+    param_distributions=param_dist,
+    n_iter=30,            # quantas combinações testar
+    cv=5,
+    scoring="f1_weighted",
+    n_jobs=-1,            # usa todos os cores
+    random_state=42)
+search.fit(X_train, y_train)
+print(search.best_params_)
+print(f"Melhor F1 (CV): {search.best_score_:.3f}")
+\end{code}
+
+\end{frame}
+
+
+\begin{frame}[c]{Variantes de Cross-Validation}
+
+\begin{figure}
+    \includegraphics[height=.78\textheight]{cv_variants.png}
+\end{figure}
+
+\end{frame}
+
+
+% ============================================================
+\section{HTML, CSS e a estrutura da Web}
+% ============================================================
+
+\begin{frame}[c]{Como funciona a Web}
+
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}O que acontece ao acessar um site}
+\begin{enumerate}
+    \item Navegador envia \highlight{requisição HTTP} ao servidor
+    \item Servidor responde com \highlight{HTML} (estrutura)
+    \item Navegador baixa \highlight{CSS} (estilo) e \highlight{JavaScript} (comportamento)
+    \item Navegador \emph{renderiza} a página — monta a árvore \highlight{DOM}
+\end{enumerate}
+
+\textbf{\color{nes_dark_purple}O que é o DOM?}
+\begin{itemize}
+    \item \emph{Document Object Model} — representação em árvore do HTML
+    \item Cada elemento HTML é um \highlight{nó} da árvore
+    \item JavaScript e ferramentas de scraping navegam nessa árvore
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}HTML mínimo}
+\begin{itemize}
+    \item \texttt{<tag>} abre, \texttt{</tag>} fecha
+    \item \texttt{id} — identificador único por página
+    \item \texttt{class} — grupo de elementos com estilo comum
+    \item Atributos: \texttt{href}, \texttt{src}, \texttt{data-*}
+\end{itemize}
+
+\textbf{\color{nes_dark_purple}CSS Selectors — a chave do scraping}
+\begin{itemize}
+    \item \texttt{div.produto} — \texttt{<div class="produto">}
+    \item \texttt{\#preco} — elemento com \texttt{id="preco"}
+    \item \texttt{table > tr > td} — \texttt{<td>} filho direto
+\end{itemize}
+\end{columns}
+
+\end{frame}
+
+
+\begin{frame}[c]{Anatomia de uma página HTML}
+
+
+\begin{figure}
+    \includegraphics[height=.78\textheight]{html_dom.jpg}
+\end{figure}
+
+\end{frame}
+
+
+% ============================================================
+\section{Web Scraping}
+% ============================================================
+
+\begin{frame}[c]{Quando o Web Scraping se torna necessário}
+
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}Situações típicas}
+\begin{itemize}
+    \item Fonte \highlight{não oferece API} pública
+    \item API existe, mas tem \highlight{limites de requisição} ou paywall
+    \item Dados históricos não disponíveis para download
+    \item Monitoramento de preços, notícias ou vagas em tempo real
+    \item Pesquisa acadêmica em dados públicos da web
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}Antes de fazer scraping, verifique}
+\begin{itemize}
+    \item \highlight{\texttt{robots.txt}} — o site permite crawlers?
+    \item \highlight{Termos de serviço} — há proibição explícita?
+    \item Existe uma \highlight{API ou dataset} oficial?
+    \item Os dados são \highlight{públicos} ou requerem login?
+\end{itemize}
+\end{columns}
+
+\begin{display}[Atenção legal]
+Scraping de dados pessoais pode violar a LGPD. Scraping que sobrecarrega servidores pode configurar negação de serviço. Use com responsabilidade e respeite os limites.
+\end{display}
+\end{frame}
+
+
+\begin{frame}[c, fragile]{BeautifulSoup — parsing de HTML}
+
+\begin{code}[Instalação e uso básico]{python}
+# pip install requests beautifulsoup4 lxml
+import requests
+from bs4 import BeautifulSoup
+
+url = "https://pt.wikipedia.org/wiki/Inteligência_artificial"
+resp = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
+soup = BeautifulSoup(resp.text, "lxml")
+# Título da página
+print(soup.find("h1").text)
+
+# Todos os parágrafos do artigo
+paragrafos = soup.select("div.mw-parser-output > p")
+for p in paragrafos[:3]:
+    print(p.get_text(strip=True))
+# Todos os links internos da Wikipedia
+links = [a["href"] for a in soup.find_all("a", href=True)
+         if a["href"].startswith("/wiki/")]
+\end{code}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{BeautifulSoup — extraindo tabelas}
+
+\begin{code}[Tabelas HTML → DataFrame Pandas]{python}
+import pandas as pd
+
+url = "https://pt.wikipedia.org/wiki/Lista_de_pa%C3%ADses_por_PIB"
+resp = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
+soup = BeautifulSoup(resp.text, "lxml")
+
+# pd.read_html usa BeautifulSoup internamente
+tabelas = pd.read_html(resp.text)       # retorna lista de DataFrames
+df_pib = tabelas[0]                     # primeira tabela da página
+print(df_pib.head())
+
+# Alternativa manual: navegar pela árvore
+tabela = soup.find("table", class_="wikitable")
+linhas = tabela.find_all("tr")
+dados = [[td.get_text(strip=True) for td in tr.find_all("td")]
+         for tr in linhas[1:]]          # pula cabeçalho
+df = pd.DataFrame(dados, columns=["pais", "pib", "ano"])
+\end{code}
+
+\end{frame}
+
+
+\begin{frame}[c]{Exemplo completo: Wikipedia}
+
+% Sugestão de imagem: diagrama de fluxo do exemplo da Wikipedia em 4 etapas:
+% (1) requests.get(url) → ícone de rede com seta para baixo
+% (2) BeautifulSoup(html) → ícone de árvore DOM
+% (3) soup.select / find_all → ícone de lupa
+% (4) pd.DataFrame → ícone de tabela/planilha
+% Cada etapa com o nome da função principal e uma linha de código abaixo.
+% Layout horizontal com setas conectando as etapas.
+
+\begin{figure}
+    \includegraphics[height=.78\textheight]{scraping_flow.jpg}
+\end{figure}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{Selenium — navegadores automatizados}
+
+Quando o conteúdo é gerado por \highlight{JavaScript} ou requer interação (login, clique, scroll), o BeautifulSoup não basta — precisamos de um navegador real.
+
+\begin{code}[Configuração e navegação básica]{python}
+# pip install selenium webdriver-manager
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
+opts = Options()
+opts.add_argument("--headless")          # sem abrir janela
+opts.add_argument("--no-sandbox")
+driver = webdriver.Chrome(options=opts)
+driver.get("https://quotes.toscrape.com/")
+# Localizar elementos — mesmos seletores CSS
+frases = driver.find_elements(By.CSS_SELECTOR, "span.text")
+autores = driver.find_elements(By.CSS_SELECTOR, "small.author")
+for frase, autor in zip(frases, autores):
+    print(f"{autor.text}: {frase.text}")
+driver.quit()
+\end{code}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{Selenium — interação e espera}
+
+\begin{code}[Cliques, formulários e espera inteligente]{python}
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import time
+driver.get("https://quotes.toscrape.com/login")
+# Preencher formulário
+driver.find_element(By.ID, "username").send_keys("user")
+driver.find_element(By.ID, "password").send_keys("password")
+driver.find_element(By.CSS_SELECTOR, "input[type='submit']").click()
+# Esperar elemento aparecer (melhor que time.sleep fixo)
+wait = WebDriverWait(driver, timeout=10)
+wait.until(EC.presence_of_element_located(
+    (By.CSS_SELECTOR, "div.quote")
+))
+# Scroll até o final da página (lazy loading)
+driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+time.sleep(1)  # aguardar carregamento após scroll
+\end{code}
+
+\end{frame}
+
+
+\begin{frame}[c]{Técnicas anti-scraping — nem tudo são flores}
+
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}Detecção de bots}
+\begin{itemize}
+    \item \highlight{Rate limiting} — bloqueia muitas requisições rápidas
+    \item \highlight{CAPTCHAs} — reCAPTCHA v2/v3, hCaptcha
+    \item \highlight{Fingerprinting} — tamanho de tela, plugins, fonte
+    \item Detecção de \texttt{webdriver} no JavaScript
+    \item Análise de padrão de comportamento (mouse, scroll)
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}Bloqueios técnicos}
+\begin{itemize}
+    \item \highlight{Cloudflare / WAF} — challenge automático
+    \item \highlight{Conteúdo dinâmico} — dados só no JS, não no HTML
+    \item \highlight{Tokens e cookies} — sessão expirada propositalmente
+    \item \highlight{Honeypots} — links invisíveis que detectam bots
+    \item Geração de seletores CSS aleatórios a cada deploy
+\end{itemize}
+\end{columns}
+
+\begin{display}[Alternativas quando o scraping falha]
+Procure APIs não documentadas (aba Network do DevTools), datasets oficiais, arquivos de exportação ou parceiros de dados. 
+\end{display}
+
+\end{frame}
+
+
+% ============================================================
+\section{APIs REST}
+% ============================================================
+
+\begin{frame}[c, fragile]{Consumindo APIs REST}
+
+\begin{code}[requests — a biblioteca padrão para HTTP]{python}
+import requests
+# GET simples
+resp = requests.get("https://api.github.com/repos/pandas-dev/pandas")
+resp.raise_for_status()          # lança exceção se status >= 400
+dados = resp.json()              # deserializa JSON automaticamente
+print(dados["stargazers_count"], dados["forks_count"])
+resp = requests.get(
+    "https://api.github.com/search/repositories",
+    params={"q": "language:python stars:>10000", "sort": "stars"},
+    headers={"Authorization": "Bearer SEU_TOKEN"},
+)
+repos = resp.json()["items"]
+page = 1
+todos = []
+while True:
+    r = requests.get(url, params={"page": page, "per_page": 100})
+    items = r.json()
+    if not items: break
+    todos.extend(items); page += 1
+\end{code}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{APIs com autenticação e rate limiting}
+
+\begin{code}[Boas práticas: sessão, retentativas e backoff]{python}
+import requests, time
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+# Sessão com retentativa automática
+session = requests.Session()
+retry = Retry(total=3,
+              backoff_factor=1,          # espera 1s, 2s, 4s
+              status_forcelist=[429, 500, 502, 503])
+session.mount("https://", HTTPAdapter(max_retries=retry))
+# Respeitar Rate Limit via header
+resp = session.get("https://api.exemplo.com/dados",
+                   headers={"X-API-Key": "TOKEN"})
+limite  = int(resp.headers.get("X-RateLimit-Remaining", 1))
+reset   = int(resp.headers.get("X-RateLimit-Reset", 0))
+if limite == 0:
+    espera = reset - time.time()
+    print(f"Rate limit atingido. Aguardando {espera:.0f}s...")
+    time.sleep(max(0, espera))
+\end{code}
+
+\end{frame}
+
+
+
+\begin{frame}[c, noframenumbering, plain]
+    \frametitle{~}
+        \vfill
+        \begin{center}
+            {\Huge Obrigado!}\vspace{1.5em}\\
+            {\Large \highlight{Alguma dúvida?}}\\
+        \end{center}
+        \vfill
+        \begin{center}
+            {\small Agora vamos para os exercícios!}
+        \end{center}
+\end{frame}
+
+\end{document}
