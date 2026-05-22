@@ -1,0 +1,545 @@
+\documentclass[xcolor=dvipsnames,t,aspectratio=169]{beamer}
+
+\usecolortheme{rose}
+\usecolortheme{dolphin}
+\usetheme{Boadilla}
+
+\input{../../templates/slides/imports}
+\input{../../templates/slides/settings}
+\input{../../templates/slides/commands}
+
+\titlegraphic{
+    \includegraphics[scale = 0.5]{../../templates/slides/logo}
+}
+
+\logo{
+\begin{tikzpicture}[overlay,remember picture]
+\node[xshift=-.75cm, yshift=-1cm] at (current page.30){
+    \includegraphics[width=0.1\textwidth]{../../templates/slides/logo}};
+\end{tikzpicture}
+}
+\usetikzlibrary{positioning}
+
+\newcommand{\highlight}[1]{{\color{nes_dark_orange} #1}}
+
+\title{Clusterização, Busca Textual e Ranking}
+
+\author{Eduardo Adame}
+
+\date{{\color{nes_dark_purple}\textbf{Ciência de Dados}\\[0.5em] 22 de maio de 2026 }}
+
+\begin{document}
+
+\frame[plain]{\titlepage}
+\setcounter{framenumber}{0}
+
+
+% ============================================================
+\section{Clusterização}
+% ============================================================
+
+\begin{frame}[c]{Aprendizado não supervisionado}
+
+\begin{columns}
+\column{0.6\textwidth}
+\textbf{\color{nes_dark_purple}O que é clusterização?}
+\begin{itemize}
+    \item Agrupar pontos \highlight{sem rótulos} — o algoritmo descobre a estrutura
+    \item Objetivo: maximizar similaridade \emph{dentro} do grupo e minimizar \emph{entre} grupos
+    \item Aplicações: segmentação de clientes, detecção de anomalias, \highlight{churn}, compressão de dados, pré-processamento para classificação
+\end{itemize}
+\textbf{\color{nes_dark_purple}Famílias de algoritmos}
+\begin{itemize}
+    \item \highlight{Centróides}: K-Means, K-Medoids
+    \item \highlight{Densidade}: DBSCAN, OPTICS, HDBSCAN
+    \item \highlight{Hierárquicos}: aglomerativo, divisivo
+    \item \highlight{Probabilísticos}: GMM, LDA
+\end{itemize}
+\column{0.4\textwidth}
+\vspace*{.4cm}
+
+
+\textbf{\color{nes_dark_purple}Churn — um caso de uso real}
+\begin{itemize}
+    \item Clientes com comportamento similar ao de quem cancelou são agrupados
+    \item Cluster de \highlight{alto risco}: baixa frequência, tickets altos, sem renovação recente
+    \item Cluster de \highlight{baixo risco}: uso crescente, suporte esporádico
+    \item Permite agir \emph{antes} do cancelamento — retenção proativa
+\end{itemize}
+\end{columns}
+
+
+\end{frame}
+
+
+\begin{frame}[c]{K-Means — o algoritmo}
+
+\begin{figure}
+    \includegraphics[height=.78\textheight]{kmeans_steps.png}
+\end{figure}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{K-Means na prática}
+
+\begin{code}[scikit-learn: K-Means e escolha de k]{python}
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
+import matplotlib.pyplot as plt
+# Sempre escalar antes de clusterizar
+X_std = StandardScaler().fit_transform(X)
+# Método do cotovelo — escolher k
+inercias = []
+for k in range(1, 11):
+    km = KMeans(n_clusters=k, random_state=42, n_init=10)
+    km.fit(X_std)
+    inercias.append(km.inertia_)
+plt.plot(range(1, 11), inercias, marker="o")
+plt.xlabel("k"); plt.ylabel("Inércia"); plt.title("Método do Cotovelo")
+\end{code}
+
+\begin{itemize}
+    \item \texttt{inertia\_} = soma das distâncias quadráticas ao centróide
+    \item \highlight{Método do cotovelo}: escolha o $k$ onde a queda desacelera
+    \item \texttt{n\_init=10} roda 10 inicializações aleatórias — usa a melhor
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{K-Means — avaliação e visualização}
+
+\begin{code}[Silhouette score e redução dimensional]{python}
+from sklearn.metrics import silhouette_score
+from sklearn.decomposition import PCA
+km = KMeans(n_clusters=3, random_state=42, n_init=10)
+labels = km.fit_predict(X_std)
+# Silhouette: [-1, 1] — quanto maior, mais coeso e separado
+score = silhouette_score(X_std, labels)
+print(f"Silhouette: {score:.3f}")
+# Visualizar em 2D com PCA
+pca = PCA(n_components=2)
+X2d = pca.fit_transform(X_std)
+plt.scatter(X2d[:, 0], X2d[:, 1], c=labels, cmap="tab10", alpha=0.6)
+plt.scatter(pca.transform(km.cluster_centers_)[:, 0],
+            pca.transform(km.cluster_centers_)[:, 1],
+            marker="X", s=200, c="black", label="Centróides")
+plt.legend()
+\end{code}
+\end{frame}
+
+
+\begin{frame}[c]{DBSCAN — clusterização por densidade}
+
+\begin{figure}
+    \includegraphics[height=.78\textheight]{kmeans_vs_dbscan.jpg}
+\end{figure}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{DBSCAN na prática}
+
+\begin{code}[scikit-learn: DBSCAN e HDBSCAN]{python}
+from sklearn.cluster import DBSCAN
+# eps: raio da vizinhança; min_samples: mínimo para ser núcleo
+db = DBSCAN(eps=0.5, min_samples=5)
+labels = db.fit_predict(X_std)
+n_clusters = len(set(labels)) - (1 if -1 in labels else 0)
+n_ruido    = (labels == -1).sum()
+print(f"{n_clusters} clusters, {n_ruido} pontos de ruído")
+# HDBSCAN — versão hierárquica, não precisa de eps
+# pip install hdbscan   (ou sklearn >= 1.3)
+from sklearn.cluster import HDBSCAN
+hdb = HDBSCAN(min_cluster_size=10)
+labels_h = hdb.fit_predict(X_std)
+\end{code}
+
+\begin{itemize}
+    \item \texttt{-1} = ruído — ponto que não pertence a nenhum cluster
+    \item \highlight{DBSCAN} encontra clusters de \emph{forma arbitrária} e detecta outliers
+    \item \highlight{HDBSCAN} dispensa $\varepsilon$ — mais robusto para dados reais
+\end{itemize}
+\end{frame}
+
+
+
+% ============================================================
+\section{Busca textual e TF-IDF}
+% ============================================================
+
+\begin{frame}[c]{Do texto bruto ao vetor}
+
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}Pipeline de pré-processamento}
+\begin{enumerate}
+    \item \highlight{Tokenização} — dividir em tokens (palavras, subpalavras)
+    \item \highlight{Normalização} — minúsculas, remoção de acentos
+    \item \highlight{Stopwords} — remover palavras muito frequentes e pouco informativas
+    \item \highlight{Stemming / Lematização} — reduzir à raiz morfológica
+    \item \highlight{Vetorização} — converter tokens em números
+\end{enumerate}
+
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}Representações vetoriais}
+\begin{itemize}
+    \item \highlight{Bag of Words (BoW)}: contagem de ocorrências — simples, sem contexto
+    \item \highlight{TF-IDF}: pondera pela raridade no corpus — muito mais discriminativo
+    \item \highlight{Word2Vec / GloVe}: vetores densos com semântica
+    \item \highlight{Sentence Transformers}: embeddings de sentenças inteiras
+\end{itemize}
+
+% \vspace{0.4em}
+Para busca e ranking: TF-IDF. Para semântica e similaridade: embeddings.
+% \end{display}
+\end{columns}
+
+\end{frame}
+
+
+\begin{frame}[c]{TF-IDF — a intuição}
+
+\begin{figure}
+    \includegraphics[height=.425\textheight]{tfidf_intuition.png}
+\end{figure}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{TF-IDF — implementação}
+
+\begin{code}[scikit-learn: vetorização e busca por cosseno]{python}
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+corpus = ["gato comeu peixe dormiu",
+          "cachorro correu parque latiu",
+          "gato cachorro são animais domésticos"]
+vec = TfidfVectorizer(max_features=1000, sublinear_tf=True)
+X   = vec.fit_transform(corpus)      # matriz esparsa (docs × termos)
+# Busca: encontrar documento mais similar à query
+query  = "animal de estimação"
+q_vec  = vec.transform([query])
+scores = cosine_similarity(q_vec, X).flatten()
+for i, score in sorted(enumerate(scores), key=lambda x: -x[1]):
+    print(f"[{score:.3f}] {corpus[i]}")
+\end{code}
+
+\begin{itemize}
+    \item \highlight{Similaridade por cosseno}: independe do comprimento do documento
+    \item \texttt{sublinear\_tf=True}: usa $1 + \log(\text{tf})$ — suaviza termos muito frequentes
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{Tokenização e busca com banco de dados}
+
+\begin{code}[SQLite + TF-IDF: buscador persistente]{python}
+# 1. Armazenar documentos no banco
+conn = sqlite3.connect("buscador.db")
+conn.execute("CREATE TABLE IF NOT EXISTS docs "
+             "(id INTEGER PRIMARY KEY, titulo TEXT, conteudo TEXT)")
+conn.executemany("INSERT INTO docs (titulo, conteudo) VALUES (?,?)", docs)
+conn.commit()
+# 2. Treinar vetorizador e serializar
+docs_texto = [row[0] for row in conn.execute("SELECT conteudo FROM docs")]
+vec = TfidfVectorizer(max_features=5000, sublinear_tf=True)
+X   = vec.fit_transform(docs_texto)
+# 3. Buscar
+def buscar(query, top_k=5):
+    vec_q = vec.transform([query])
+    scores = cosine_similarity(vec_q, X).flatten()
+    top = scores.argsort()[::-1][:top_k]
+    return conn.execute(
+        f"SELECT titulo FROM docs WHERE id IN ({','.join('?'*top_k)})",
+        (top + 1).tolist()).fetchall()
+\end{code}
+
+\end{frame}
+
+
+% ============================================================
+\section{PageRank}
+% ============================================================
+
+\begin{frame}[c]{A história do PageRank}
+
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}O problema de 1998}
+\begin{itemize}
+    \item Alta Visa e outros buscadores ranqueavam por \highlight{correspondência de palavras}
+    \item Fácil de manipular: repetir a palavra-chave mil vezes
+    \item Sergey Brin e Larry Page (Stanford) perguntaram: \highlight{``e se um link fosse um voto?''}
+    \item Insight: um voto de uma página importante vale mais que de uma irrelevante
+\end{itemize}
+
+\vspace{0.4em}
+\textbf{\color{nes_dark_purple}A metáfora do internauta aleatório}
+\begin{itemize}
+    \item Imagine um usuário seguindo links \highlight{aleatoriamente}
+    \item Com probabilidade $\alpha$ clica num link qualquer da página
+    \item Com probabilidade $1 - \alpha$ \highlight{teleporta} para uma página aleatória
+    \item PageRank = fração do tempo que o internauta passa em cada página
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}Definição formal}
+
+Seja $N$ o número de páginas e $L(j)$ o conjunto de páginas que apontam para $j$:
+
+$$\text{PR}(j) = \frac{1-\alpha}{N} + \alpha \sum_{i \in L(j)} \frac{\text{PR}(i)}{|C(i)|}$$
+
+onde $|C(i)|$ é o número de links saindo de $i$ e $\alpha \approx 0{,}85$.
+
+\vspace{0.5em}
+\begin{display}[Convergência]
+A iteração converge pois a matriz de transição é estocástica e irredutível graças ao fator de teleporte.
+\end{display}
+\end{columns}
+
+\end{frame}
+
+
+\begin{frame}[c]{PageRank — o internauta aleatório}
+
+\begin{figure}
+    \includegraphics[height=.78\textheight]{pagerank_graph.jpg}
+\end{figure}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{PageRank — implementação iterativa}
+
+\begin{code}[NetworkX: PageRank em grafo da Wikipedia]{python}
+import networkx as nx
+import requests
+from bs4 import BeautifulSoup
+def links_da_pagina(titulo):
+    url = f"https://pt.wikipedia.org/wiki/{titulo}"
+    soup = BeautifulSoup(requests.get(url,
+           headers={"User-Agent": "Mozilla/5.0"}).text, "lxml")
+    return [a["href"].replace("/wiki/", "")
+            for a in soup.select("div.mw-parser-output a[href^='/wiki/']")
+            if ":" not in a["href"]]   # exclui namespaces especiais
+G = nx.DiGraph()
+visitados = set()
+fila = ["Python_(linguagem_de_programação)"]
+\end{code}
+\end{frame}
+
+\begin{frame}[c, fragile]{PageRank — implementação iterativa}
+
+\begin{code}[NetworkX: PageRank em grafo da Wikipedia]{python}
+while fila and len(visitados) < 30:   # limitar para demo
+    pagina = fila.pop(0)
+    if pagina in visitados: continue
+    visitados.add(pagina)
+    for dest in links_da_pagina(pagina)[:10]:
+        G.add_edge(pagina, dest)
+        fila.append(dest)
+pr = nx.pagerank(G, alpha=0.85, max_iter=100)
+top5 = sorted(pr, key=pr.get, reverse=True)[:5]
+\end{code}
+\end{frame}
+
+
+\begin{frame}[c, fragile]{PageRank — do zero, sem bibliotecas}
+
+\begin{code}[Iteração de potências — entendendo o algoritmo]{python}
+    # Teleporte: internauta pula para página aleatória com prob. (1-alpha)
+    r = np.ones(N) / N
+    for _ in range(max_iter):
+        r_novo = alpha * M @ r + (1 - alpha) / N
+        if np.linalg.norm(r_novo - r, 1) < tol:
+            break
+        r = r_novo
+    return dict(zip(nós, r))
+\end{code}
+\end{frame}
+
+\begin{frame}[c, fragile]{PageRank — do zero, sem bibliotecas}
+
+\begin{code}[Iteração de potências — entendendo o algoritmo]{python}
+    # Teleporte: internauta pula para página aleatória com prob. (1-alpha)
+    r = np.ones(N) / N
+    for _ in range(max_iter):
+        r_novo = alpha * M @ r + (1 - alpha) / N
+        if np.linalg.norm(r_novo - r, 1) < tol:
+            break
+        r = r_novo
+    return dict(zip(nós, r))
+\end{code}
+\end{frame}
+
+
+
+% ============================================================
+\section{LDA — Modelagem de Tópicos}
+% ============================================================
+
+\begin{frame}[c]{LDA — Latent Dirichlet Allocation}
+
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}A intuição}
+\begin{itemize}
+    \item Um documento é uma \highlight{mistura de tópicos}
+    \item Cada tópico é uma \highlight{distribuição sobre palavras}
+    \item Exemplo: documento sobre esporte pode ser 70\% tópico ``futebol'', 30\% tópico ``saúde''
+    \item LDA \emph{infere} os tópicos latentes a partir das co-ocorrências de palavras
+\end{itemize}
+
+
+
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}Processo gerador (modelo)}
+\begin{enumerate}
+    \item Para cada tópico $k$: sorteia distribuição sobre palavras $\phi_k \sim \text{Dir}(\beta)$
+    \item Para cada documento $d$: sorteia mistura de tópicos $\theta_d \sim \text{Dir}(\alpha)$
+    \item Para cada palavra $w$ em $d$: sorteia tópico $z \sim \theta_d$, depois palavra $w \sim \phi_z$
+\end{enumerate}
+\end{columns}
+\end{frame}
+
+\begin{frame}[c]{LDA — Latent Dirichlet Allocation}
+
+\textbf{\color{nes_dark_purple}O que Dirichlet tem a ver?}
+\begin{itemize}
+    \item Distribuição de Dirichlet é uma \highlight{distribuição sobre distribuições}
+    \item Parâmetro $\alpha$ pequeno $\Rightarrow$ documentos com poucos tópicos dominantes
+    \item Parâmetro $\alpha$ grande $\Rightarrow$ mistura uniforme de tópicos
+    \item Análogo para $\beta$ e as palavras nos tópicos
+\end{itemize}
+\vspace{0.4em}
+\begin{display}[Inferência]
+Observamos as palavras; queremos inferir $\theta$ e $\phi$. Usamos Gibbs Sampling ou Variational Bayes.
+\end{display}
+\end{frame}
+
+\begin{frame}[c]{LDA — processo gerador}
+
+\begin{figure}
+    \includegraphics[height=.78\textheight]{lda_plate.jpg}
+\end{figure}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{LDA na prática}
+
+\begin{code}[scikit-learn: LDA em corpus de notícias]{python}
+from sklearn.decomposition import LatentDirichletAllocation
+from sklearn.feature_extraction.text import CountVectorizer
+=
+# LDA usa contagens (não TF-IDF)
+vec = CountVectorizer(max_df=0.95, min_df=2,
+                      max_features=1000, stop_words="english")
+X_counts = vec.fit_transform(corpus)
+lda = LatentDirichletAllocation(n_components=5,     # número de tópicos
+                                max_iter=20,
+                                random_state=42)
+lda.fit(X_counts)
+# Palavras mais relevantes por tópico
+termos = vec.get_feature_names_out()
+for t, componente in enumerate(lda.components_):
+    top_idx = componente.argsort()[::-1][:8]
+    print(f"Tópico {t}: {' | '.join(termos[top_idx])}")
+doc_topicos = lda.transform(X_counts)   # shape: (n_docs, n_topics)
+\end{code}
+
+\end{frame}
+
+
+% ============================================================
+\section{Busca semântica}
+% ============================================================
+
+\begin{frame}[c]{De TF-IDF a embeddings — busca semântica}
+
+\begin{columns}
+\column{0.6\textwidth}
+\textbf{\color{nes_dark_purple}Limitações do TF-IDF}
+\begin{itemize}
+    \item Baseado em \highlight{correspondência exata} de tokens
+    \item ``automóvel'' e ``carro'' são completamente distintos
+    \item Sem noção de contexto ou sinônimos
+    \item Funciona bem para recuperação léxica; mal para semântica
+\end{itemize}
+
+\vspace{0.4em}
+\textbf{\color{nes_dark_purple}Sentence Transformers}
+\begin{itemize}
+    \item Modelo BERT ajustado para produzir \highlight{embeddings de sentenças}
+    \item Documentos similares ficam próximos no espaço vetorial
+    \item Busca = encontrar vizinhos mais próximos no espaço de embeddings
+\end{itemize}
+
+\column{0.4\textwidth}
+\textbf{\color{nes_dark_purple}Pipeline completo}
+\begin{enumerate}
+    \item Gerar embeddings dos documentos com \texttt{sentence-transformers}
+    \item Armazenar no banco (PostgreSQL com \texttt{pgvector} ou SQLite com \texttt{sqlite-vec})
+    \item Na busca: gerar embedding da query e fazer busca por vizinhos mais próximos (\highlight{ANN})
+    \item Retornar documentos ordenados por similaridade de cosseno
+\end{enumerate}
+\end{columns}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{Busca semântica com sentence-transformers}
+
+\begin{code}[Embeddings + SQLite: buscador semântico]{python}
+from sentence_transformers import SentenceTransformer
+import numpy as np, sqlite3, json
+
+model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
+
+# Indexar documentos
+conn = sqlite3.connect("semantico.db")
+conn.execute("CREATE TABLE IF NOT EXISTS docs "
+             "(id INTEGER PRIMARY KEY, titulo TEXT, "
+             " conteudo TEXT, embedding TEXT)")
+
+for titulo, texto in documentos:
+    emb = model.encode(texto).tolist()
+    conn.execute("INSERT INTO docs (titulo, conteudo, embedding) VALUES (?,?,?)",
+                 (titulo, texto, json.dumps(emb)))
+conn.commit()
+\end{code}
+
+\end{frame}
+
+\begin{frame}[c, fragile]{Busca semântica com sentence-transformers}
+
+\begin{code}[Embeddings + SQLite: buscador semântico]{python}
+# Buscar
+def buscar_semantico(query, top_k=5):
+    q_emb = model.encode(query)
+    rows  = conn.execute("SELECT id, titulo, embedding FROM docs").fetchall()
+    scores = [(r[0], r[1],
+               float(np.dot(q_emb, json.loads(r[2])) /
+               (np.linalg.norm(q_emb) * np.linalg.norm(json.loads(r[2])))))
+              for r in rows]
+    return sorted(scores, key=lambda x: -x[2])[:top_k]
+\end{code}
+
+\end{frame}
+
+\begin{frame}[c, noframenumbering, plain]
+    \frametitle{~}
+        \vfill
+        \begin{center}
+            {\Huge Obrigado!}\vspace{1.5em}\\
+            {\Large \highlight{Alguma dúvida?}}\\
+        \end{center}
+        \vfill
+        \begin{center}
+            {\small Agora vamos para os exercícios!}
+        \end{center}
+\end{frame}
+\end{document}
