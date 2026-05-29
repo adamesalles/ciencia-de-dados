@@ -1,0 +1,689 @@
+\documentclass[xcolor=dvipsnames,t,aspectratio=169]{beamer}
+
+\usecolortheme{rose}
+\usecolortheme{dolphin}
+\usetheme{Boadilla}
+
+\input{../../templates/slides/imports}
+\input{../../templates/slides/settings}
+\input{../../templates/slides/commands}
+
+\titlegraphic{
+    \includegraphics[scale = 0.5]{../../templates/slides/logo}
+}
+
+\logo{
+\begin{tikzpicture}[overlay,remember picture]
+\node[xshift=-.75cm, yshift=-1cm] at (current page.30){
+    \includegraphics[width=0.1\textwidth]{../../templates/slides/logo}};
+\end{tikzpicture}
+}
+\usetikzlibrary{positioning}
+
+\newcommand{\highlight}[1]{{\color{nes_dark_orange} #1}}
+
+\title{Processamento de Linguagem Natural e Séries Temporais}
+
+\author{Eduardo Adame}
+
+\date{{\color{nes_dark_purple}\textbf{Ciência de Dados}\\[0.5em] 29 de maio de 2026 }}
+
+\begin{document}
+
+\frame[plain]{\titlepage}
+\setcounter{framenumber}{0}
+
+
+% ============================================================
+\section{Processamento de Linguagem Natural}
+% ============================================================
+
+\begin{frame}[c]{Introdução ao PLN}
+
+\begin{columns}
+\column{0.55\textwidth}
+\textbf{\color{nes_dark_purple}O que é PLN?}
+\begin{itemize}
+    \item Campo que estuda como computadores podem \highlight{compreender, gerar e manipular} linguagem humana
+    \item Intersecção de linguística, estatística e aprendizado de máquina
+    \item A linguagem é \highlight{ambígua, contextual e evolutiva} — o que torna o problema difícil
+\end{itemize}
+
+% \vspace{0.4em}
+\textbf{\color{nes_dark_purple}Por que é difícil?}
+\begin{itemize}
+    \item ``Eu vi o homem com o telescópio'' — quem tem o telescópio?
+    \item Ironia, sarcasmo, metáforas
+    \item Conhecimento de mundo implícito
+    \item Línguas morfologicamente ricas (português, árabe, finlandês)
+\end{itemize}
+
+\column{0.45\textwidth}
+\textbf{\color{nes_dark_purple}Tarefas clássicas de PLN}
+\begin{itemize}
+    \item \highlight{Tokenização e segmentação} de sentenças
+    \item \highlight{POS Tagging} — classe gramatical de cada palavra
+    \item \highlight{Parsing} — estrutura sintática da frase
+    \item \highlight{NER} — reconhecimento de entidades nomeadas
+    \item \highlight{Análise de sentimento}
+    \item \highlight{Tradução automática}
+    \item \highlight{Sumarização} e geração de texto
+    \item \highlight{Resposta a perguntas} (QA)
+\end{itemize}
+\end{columns}
+
+\end{frame}
+
+
+\begin{frame}[c]{Morfologia e estados finitos}
+
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}Morfologia computacional}
+\begin{itemize}
+    \item Estuda a \highlight{estrutura interna das palavras}: morfemas, raízes, afixos
+    \item ``infelizmente'' = \texttt{in-} + \texttt{feliz} + \texttt{-mente}
+    \item Fundamental para lematização e análise morfológica
+\end{itemize}
+
+
+
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}Autômatos de estados finitos (FSA)}
+\begin{itemize}
+    \item Modelo matemático que \highlight{reconhece padrões} em sequências de símbolos
+    \item FSA determinístico: cada estado tem no máximo uma transição por símbolo
+    \item Transdutor (FST): mapeia uma sequência em outra — ideal para \highlight{stemming e lematização}
+    \item Ex.: \texttt{corr} + \texttt{er} $\to$ lema \texttt{correr}; \texttt{corri} $\to$ \texttt{correr}
+\end{itemize}
+
+
+\end{columns}
+
+\end{frame}
+
+\begin{frame}[c]{Morfologia e estados finitos}
+\begin{figure}
+    \includegraphics[height=.7\textheight]{english_morphology.png}
+\end{figure}
+\end{frame}
+
+\begin{frame}[c]{POS Tagging — etiquetagem morfossintática}
+
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}O que é?}
+\begin{itemize}
+    \item Atribuir a cada token sua \highlight{classe gramatical}: substantivo, verbo, adjetivo, \ldots
+    \item Base para parsing, NER e análise de dependências
+    \item Problema ambíguo: ``banco'' pode ser substantivo ou verbo
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}Abordagens}
+\begin{itemize}
+    \item \highlight{Baseada em regras}: dicionário + regras contextuais (Brill Tagger)
+    \item \highlight{Estatística}: HMM, CRF — modela sequências de tags
+    \item \highlight{Redes neurais}: BiLSTM-CRF, BERT fine-tuned — estado da arte
+\end{itemize}
+
+\end{columns}
+
+\end{frame}
+
+\begin{frame}[c]{POS Tagging — etiquetagem morfossintática}
+    \begin{figure}
+    \includegraphics[height=.62\textheight]{pos_tagging.jpeg}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}[c, fragile]{spaCy — PLN industrial em Python}
+
+\begin{code}[Tokenização, POS e NER com spaCy]{python}
+import spacy  # pip install spacy + download pt_core_news_sm
+
+nlp  = spacy.load("pt_core_news_sm")
+doc  = nlp("O presidente do Brasil visitou Lisboa em maio de 2026.")
+
+# POS Tagging
+for token in doc:
+    print(f"{token.text:15s} {token.pos_:8s} {token.lemma_}")
+
+# Named Entity Recognition (NER)
+for ent in doc.ents:
+    print(f"{ent.text:20s} → {ent.label_}")
+
+# Dependências sintáticas
+for token in doc:
+    print(f"{token.text} --[{token.dep_}]--> {token.head.text}")
+\end{code}
+
+\end{frame}
+
+
+\begin{frame}[c]{Gramáticas e estruturas de dependência}
+
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}Gramáticas livres de contexto (CFG)}
+\begin{itemize}
+    \item Regras da forma $A \to \alpha$: um não-terminal gera uma sequência
+    \item $\text{S} \to \text{NP VP}$; $\text{NP} \to \text{DET N}$; \ldots
+    \item Produz \highlight{árvore de constituintes} (sintagmas)
+    \item Ambiguidade estrutural: múltiplas árvores para a mesma frase
+\end{itemize}
+
+
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}Gramáticas de dependência}
+\begin{itemize}
+    \item Relações \highlight{binárias assimétricas} entre palavras: cabeça $\to$ dependente
+    \item Não assume constituintes — mais adequada para línguas de ordem livre
+    \item Universal Dependencies (UD): esquema padronizado para 100+ línguas
+\end{itemize}
+
+\end{columns}
+
+\end{frame}
+
+
+\begin{frame}[c]{Gramáticas e estruturas de dependência}
+
+\begin{figure}
+    \includegraphics[height=.60\textheight]{dep_tree.jpg}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}[c]{Semântica — do símbolo ao significado}
+
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}Semântica composicional}
+\begin{itemize}
+    \item Princípio de Frege: o significado de uma expressão é determinado pelo significado das suas partes e pela forma como se combinam
+    \item ``todo gato dorme'' $\Rightarrow$ $\forall x.\,\text{gato}(x) \Rightarrow \text{dorme}(x)$
+    \item Base para sistemas de \highlight{pergunta-resposta} e verificação de fatos
+\end{itemize}
+
+
+
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}Semântica distribucional}
+\begin{itemize}
+    \item Hipótese distribucional: palavras que aparecem nos mesmos contextos têm significados similares
+    \item ``You shall know a word by the company it keeps'' — Firth (1957)
+    \item Base teórica de \highlight{Word2Vec, GloVe e embeddings modernos}
+\end{itemize}
+
+
+\end{columns}
+
+\end{frame}
+
+\begin{frame}[c]{Semântica — do símbolo ao significado}
+
+
+\textbf{\color{nes_dark_purple}Semântica lexical}
+\begin{itemize}
+    \item Relações entre palavras: sinonímia, antonímia, hiperonímia
+    \item \highlight{WordNet} organiza substantivos em hierarquias de \emph{synsets}
+    \item Desambiguação do sentido (WSD): ``banco'' financeiro vs. assento
+\end{itemize}
+
+
+\begin{display}[Da semântica distribucional aos LLMs]
+Word2Vec captura relações: $\vec{\text{rei}} - \vec{\text{homem}} + \vec{\text{mulher}} \approx \vec{\text{rainha}}$. GPT e BERT generalizam esse princípio com atenção contextualizada.
+\end{display}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{Word2Vec e semântica distribucional}
+
+\begin{code}[gensim: treinando Word2Vec]{python}
+from gensim.models import Word2Vec  # pip install gensim
+
+sentencas = [["gato", "dorme", "sofá"],
+             ["cachorro", "corre", "parque"],
+             ["gato", "cachorro", "animais"]]
+
+modelo = Word2Vec(sentencas, vector_size=50,
+                  window=3, min_count=1, epochs=100)
+
+# Similaridade semântica
+print(modelo.wv.similarity("gato", "cachorro"))
+
+# Palavras mais próximas
+print(modelo.wv.most_similar("gato", topn=3))
+\end{code}
+
+\end{frame}
+
+\begin{frame}[c, fragile]{Word2Vec — analogia e visualização}
+
+\begin{code}[gensim: analogia vetorial e PCA]{python}
+# Analogia: rei - homem + mulher approx. rainha
+resultado = modelo.wv.most_similar(
+    positive=["rei", "mulher"], negative=["homem"])
+print(resultado[:3])
+
+# Visualizar embeddings em 2D com PCA
+from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
+
+palavras = list(modelo.wv.key_to_index.keys())
+vetores  = modelo.wv[palavras]
+coords   = PCA(n_components=2).fit_transform(vetores)
+plt.scatter(coords[:, 0], coords[:, 1], alpha=0.6)
+for i, p in enumerate(palavras):
+    plt.annotate(p, coords[i], fontsize=8)
+plt.title("Embeddings Word2Vec — 2D (PCA)")
+\end{code}
+
+\end{frame}
+
+
+\begin{frame}[c]{Pesquisas atuais em PLN}
+
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}Transformers e LLMs}
+\begin{itemize}
+    \item \highlight{Atenção multi-cabeça} substitui recorrência — paralelizável
+    \item BERT (2018): pré-treino bidirecional em texto mascarado
+    \item GPT (2018--): geração autorregressiva em escala
+    \item LLMs com bilhões de parâmetros emergem com capacidades inesperadas (\emph{in-context learning})
+\end{itemize}
+
+
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}PLN em português}
+\begin{itemize}
+    \item \textbf{BERTimbau}: BERT pré-treinado em 2,7 bilhões de palavras em português
+    \item \textbf{Maritaca AI}: LLM brasileiro com foco em português e legislação
+    \item \textbf{NILC}: grupo de pesquisa em PLN da USP/UFSCar — recursos, corpus e ferramentas abertas
+    \item \highlight{Oportunidade}: dados e modelos para português ainda são escassos — área em crescimento
+\end{itemize}
+\end{columns}
+\textbf{\color{nes_dark_purple}Problemas em aberto}
+\begin{itemize}
+    \item \highlight{Alucinação}: modelos geram fatos falsos com confiança
+    \item \highlight{Raciocínio}: LLMs ainda falham em lógica formal e matemática elementar
+    \item \highlight{Multilinguismo}: desempenho cai drasticamente em línguas de baixo recurso
+\end{itemize}
+
+\end{frame}
+
+
+% ============================================================
+\section{Séries Temporais}
+% ============================================================
+
+\begin{frame}[c]{O que é uma série temporal?}
+
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}Definição}
+\begin{itemize}
+    \item Sequência de observações \highlight{ordenadas no tempo}: $x_1, x_2, \ldots, x_T$
+    \item A ordem importa — embaralhar destrói a estrutura
+    \item Exemplos: temperatura diária, preço de ações, demanda de energia, número de usuários ativos
+\end{itemize}
+
+
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}Componentes}
+\begin{itemize}
+    \item \highlight{Tendência (trend)}: direção de longo prazo (crescimento, queda)
+    \item \highlight{Sazonalidade}: padrão periódico e previsível (semanal, anual)
+    \item \highlight{Ciclo}: flutuação de longo prazo sem período fixo
+    \item \highlight{Ruído}: variação aleatória irredutível
+\end{itemize}
+
+
+\end{columns}
+
+\end{frame}
+
+\begin{frame}[c]{O que é uma série temporal?}
+
+
+\textbf{\color{nes_dark_purple}Por que é diferente de dados tabulares?}
+\begin{itemize}
+    \item Observações \highlight{não são independentes} — o passado informa o futuro
+    \item Vazamento temporal: usar dados futuros para prever o passado
+    \item Validação cruzada requer \highlight{respeito à ordem cronológica}
+\end{itemize}
+
+
+\begin{display}[Decomposição]
+Uma série pode ser aditiva: $x_t = T_t + S_t + R_t$, ou multiplicativa: $x_t = T_t \times S_t \times R_t$.
+\end{display}
+
+
+\end{frame}
+
+
+\begin{frame}[c]{Decomposição de séries temporais}
+
+\begin{figure}
+    \includegraphics[height=.78\textheight]{stl_decom.png}
+\end{figure}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{Decomposição na prática}
+
+\begin{code}[statsmodels: STL e decomposição clássica]{python}
+import pandas as pd
+from statsmodels.tsa.seasonal import STL, seasonal_decompose
+
+serie = pd.read_csv("passageiros.csv",
+                    index_col="data", parse_dates=True)["passageiros"]
+
+# Decomposição aditiva clássica
+decomp = seasonal_decompose(serie, model="additive", period=12)
+decomp.plot()
+
+# STL — mais robusta a outliers
+stl = STL(serie, period=12, robust=True)
+res = stl.fit()
+res.plot()
+
+print(f"Tendência final: {res.trend.iloc[-1]:.0f}")
+print(f"Amplitude sazonal: {res.seasonal.max():.0f}")
+\end{code}
+
+\end{frame}
+
+
+\begin{frame}[c]{Estacionaridade e autocorrelação}
+
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}Estacionaridade}
+\begin{itemize}
+    \item Série \highlight{fracamente estacionária}: média, variância e autocovariância constantes ao longo do tempo
+    \item ARIMA e modelos clássicos \emph{exigem} estacionaridade
+    \item Teste ADF (\emph{Augmented Dickey-Fuller}): $H_0$ = raiz unitária (não estacionária)
+    \item Transformações para estacionarizar: \highlight{diferenciação}, $\log$, Box-Cox
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}Autocorrelação}
+\begin{itemize}
+    \item \highlight{ACF} (função de autocorrelação): correlação de $x_t$ com $x_{t-k}$ para cada lag $k$
+    \item \highlight{PACF} (parcial): correlação direta no lag $k$, removendo efeitos de lags intermediários
+    \item ACF decai lentamente $\Rightarrow$ não estacionária
+    \item Padrão ACF/PACF guia a escolha de $p$, $d$, $q$ no ARIMA
+\end{itemize}
+\end{columns}
+
+\end{frame}
+
+\begin{frame}[c]{Estacionaridade e autocorrelação}
+\begin{figure}
+    \includegraphics[height=.35\textheight]{acf.png}
+\end{figure}
+\end{frame}
+
+\begin{frame}[c, fragile]{Estacionaridade — testes e transformações}
+
+\begin{code}[statsmodels: ADF, diferenciação e ACF/PACF]{python}
+from statsmodels.tsa.stattools import adfuller
+from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
+
+# Teste ADF — H0: raiz unitária (não estacionária)
+resultado = adfuller(serie)
+print(f"ADF stat: {resultado[0]:.3f}  p-valor: {resultado[1]:.4f}")
+# p < 0.05 → rejeita H0 → série estacionária
+
+# 1ª diferença para remover tendência
+serie_diff = serie.diff().dropna()
+adf2 = adfuller(serie_diff)
+print(f"Após diff — p-valor: {adf2[1]:.4f}")
+
+# ACF e PACF da série diferenciada
+fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+plot_acf(serie_diff,  lags=24, ax=axes[0])
+plot_pacf(serie_diff, lags=24, ax=axes[1])
+\end{code}
+
+\end{frame}
+
+
+\begin{frame}[c]{ARIMA — modelo clássico de previsão}
+
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}Componentes do ARIMA$(p, d, q)$}
+\begin{itemize}
+    \item \highlight{AR$(p)$}: autorregressivo — $x_t$ depende de $p$ valores passados
+    $$x_t = \phi_1 x_{t-1} + \cdots + \phi_p x_{t-p} + \varepsilon_t$$
+    \item \highlight{I$(d)$}: integrado — diferencia $d$ vezes para estacionarizar
+    \item \highlight{MA$(q)$}: médias móveis — $x_t$ depende de $q$ erros passados
+    $$x_t = \varepsilon_t + \theta_1 \varepsilon_{t-1} + \cdots + \theta_q \varepsilon_{t-q}$$
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}Como escolher $p$, $d$, $q$?}
+\begin{itemize}
+    \item $d$: número de diferenciações até estacionarizar (teste ADF)
+    \item $p$: lag onde a \highlight{PACF} corta abruptamente
+    \item $q$: lag onde a \highlight{ACF} corta abruptamente
+    \item Alternativa automática: \texttt{auto\_arima} (pmdarima) minimiza AIC/BIC
+\end{itemize}
+
+\end{columns}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{ARIMA na prática}
+
+\begin{code}[statsmodels + pmdarima: ajuste e previsão]{python}
+from statsmodels.tsa.arima.model import ARIMA
+import pmdarima as pm   # pip install pmdarima
+
+# Seleção automática de ordem
+modelo_auto = pm.auto_arima(serie_treino,
+                             seasonal=True, m=12,
+                             information_criterion="aic",
+                             stepwise=True)
+print(modelo_auto.summary())
+\end{code}
+
+\end{frame}
+
+\begin{frame}[c, fragile]{ARIMA na prática}
+
+\begin{code}[statsmodels + pmdarima: ajuste e previsão]{python}
+# Ajuste manual com ordem escolhida
+modelo = ARIMA(serie_treino, order=(1, 1, 1),
+               seasonal_order=(1, 1, 0, 12))
+res    = modelo.fit()
+
+# Previsão com intervalo de confiança
+previsao = res.get_forecast(steps=12)
+media    = previsao.predicted_mean
+ic       = previsao.conf_int(alpha=0.05)
+
+# Métrica
+from sklearn.metrics import mean_absolute_percentage_error
+mape = mean_absolute_percentage_error(serie_teste, media)
+print(f"MAPE: {mape:.2%}")
+\end{code}
+
+\end{frame}
+
+
+\begin{frame}[c]{Prophet e modelos modernos}
+
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}Facebook Prophet}
+\begin{itemize}
+    \item Modelo aditivo: $y(t) = g(t) + s(t) + h(t) + \varepsilon_t$
+    \item $g(t)$: tendência (linear ou logística)
+    \item $s(t)$: sazonalidade via séries de Fourier
+    \item $h(t)$: feriados e eventos especiais
+    \item \highlight{Robusto a dados faltantes} e mudanças de tendência (\emph{changepoints})
+    \item Interface simples — ideal para analistas sem background em séries temporais
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}Outros modelos relevantes}
+\begin{itemize}
+    \item \highlight{Exponential Smoothing (ETS)}: médias ponderadas exponencialmente decrescentes
+    \item \highlight{Gradient Boosting (XGBoost/LightGBM)}: features de lag como entrada tabular — muito competitivo
+    \item \highlight{N-BEATS / N-HiTS}: redes neurais puramente para séries, sem recorrência
+    \item \highlight{TimesFM / Chronos}: LLMs pré-treinados em séries temporais (zero-shot)
+\end{itemize}
+\end{columns}
+
+\end{frame}
+
+
+\begin{frame}[c, fragile]{Prophet na prática}
+
+\begin{code}[Facebook Prophet: ajuste e previsão]{python}
+from prophet import Prophet  # pip install prophet
+import pandas as pd
+
+# Prophet exige colunas "ds" (datetime) e "y" (valor)
+df_prophet = serie.reset_index()
+df_prophet.columns = ["ds", "y"]
+
+modelo = Prophet(yearly_seasonality=True,
+                 weekly_seasonality=False,
+                 changepoint_prior_scale=0.1)
+modelo.add_country_holidays(country_name="BR")
+modelo.fit(df_prophet[df_prophet["ds"] < "2024-01-01"])
+
+futuro   = modelo.make_future_dataframe(periods=12, freq="MS")
+previsao = modelo.predict(futuro)
+modelo.plot(previsao)
+modelo.plot_components(previsao)
+\end{code}
+
+\end{frame}
+
+
+\begin{frame}[c]{LSTM para séries temporais}
+
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}Por que LSTM?}
+\begin{itemize}
+    \item Redes recorrentes (RNN) sofrem de \highlight{gradiente que desaparece} — esquecem dependências longas
+    \item LSTM (\emph{Long Short-Term Memory}) resolve com \highlight{portas} que controlam o fluxo de informação
+    \item Porta de esquecimento, de entrada e de saída — a rede aprende \emph{o que} lembrar
+    \item Captura padrões não-lineares e dependências de longo prazo
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{\color{nes_dark_purple}Preparação dos dados}
+\begin{itemize}
+    \item Criar janelas deslizantes: $[x_{t-w}, \ldots, x_{t-1}] \to x_t$
+    \item Normalizar para $[0, 1]$ — LSTM é sensível à escala
+    \item Respeitar a ordem cronológica no split treino/teste
+\end{itemize}
+
+
+\end{columns}
+
+\end{frame}
+
+
+\begin{frame}[c]{LSTM para séries temporais}
+
+\begin{figure}
+    \includegraphics[height=.52\textheight]{lstm.JPG}
+\end{figure}
+\end{frame}
+
+\begin{frame}[c, fragile]{LSTM na prática — preparação}
+
+\begin{code}[Keras: janelas deslizantes]{python}
+import numpy as np
+from sklearn.preprocessing import MinMaxScaler
+
+scaler  = MinMaxScaler()
+valores = scaler.fit_transform(serie.values.reshape(-1, 1))
+
+def criar_janelas(dados, janela=12):
+    X, y = [], []
+    for i in range(len(dados) - janela):
+        X.append(dados[i:i+janela, 0])
+        y.append(dados[i+janela, 0])
+    return np.array(X), np.array(y)
+
+X, y = criar_janelas(valores, janela=12)
+split = int(len(X) * 0.8)
+X_tr, X_te = X[:split], X[split:]
+y_tr, y_te = y[:split], y[split:]
+\end{code}
+
+\end{frame}
+
+\begin{frame}[c, fragile]{LSTM na prática — reshape e arquitetura}
+
+\begin{code}[Keras: reshape e definição do modelo]{python}
+# Reshape: (samples, timesteps, features)
+X_tr = X_tr.reshape(-1, 12, 1)
+X_te = X_te.reshape(-1, 12, 1)
+
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import LSTM, Dense, Dropout
+
+modelo_lstm = Sequential([
+    LSTM(64, return_sequences=True, input_shape=(12, 1)),
+    Dropout(0.2),
+    LSTM(32),
+    Dense(1)
+])
+modelo_lstm.compile(optimizer="adam", loss="mse")
+modelo_lstm.fit(X_tr, y_tr, epochs=50,
+                batch_size=16, validation_split=0.1)
+\end{code}
+
+\end{frame}
+
+\begin{frame}[c, fragile]{LSTM na prática — modelo e previsão}
+
+\begin{code}[Keras: treinamento e inversão da escala]{python}
+modelo_lstm.compile(optimizer="adam", loss="mse")
+modelo_lstm.fit(X_tr, y_tr,
+                epochs=50, batch_size=16,
+                validation_split=0.1, verbose=0)
+
+# Previsão e inversão da normalização
+y_pred     = modelo_lstm.predict(X_te)
+y_pred_inv = scaler.inverse_transform(y_pred)
+y_te_inv   = scaler.inverse_transform(y_te.reshape(-1, 1))
+
+from sklearn.metrics import mean_absolute_percentage_error
+mape = mean_absolute_percentage_error(y_te_inv, y_pred_inv)
+print(f"MAPE LSTM: {mape:.2%}")
+\end{code}
+
+\end{frame}
+
+
+\begin{frame}[c, noframenumbering, plain]
+    \frametitle{~}
+        \vfill
+        \begin{center}
+            {\Huge Obrigado!}\vspace{1.5em}\\
+            {\Large \highlight{Alguma dúvida?}}\\
+        \end{center}
+        \vfill
+        \begin{center}
+            {\small Agora vamos para os exercícios!}
+        \end{center}
+\end{frame}
+
+\end{document}
